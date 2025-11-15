@@ -55,28 +55,22 @@ async def chat_with_coach(
     - Recent EEG/voice/diet data
     - Long-term memory of past conversations
     """
-    # TODO: Implement LangChain-based coach
-    # 1. Retrieve user context (health data, preferences)
-    # 2. Search knowledge base (GraphRAG)
-    # 3. Generate response with LLM
-    # 4. Store conversation in memory
+    from backend.services.llm_coach import get_wellness_coach
+
+    # Get wellness coach for this user
+    coach = get_wellness_coach(user_id)
+
+    # Get response from coach
+    result = coach.chat(
+        message=request.message,
+        include_context=request.include_context
+    )
 
     return ChatResponse(
-        message="I understand you're feeling anxious and low on energy. Based on your recent EEG data showing elevated stress levels and your sleep log indicating only 5 hours last night, I recommend: 1) Prioritize 7-8 hours of sleep tonight, 2) Try a 10-minute breathing exercise (I can guide you), 3) Consider magnesium-rich foods like nuts and leafy greens. Would you like me to create a personalized plan?",
-        context_used=[
-            "Recent EEG analysis (high stress)",
-            "Sleep log (5 hours)",
-            "User preference: natural remedies"
-        ],
-        recommendations=[
-            "Improve sleep hygiene",
-            "Magnesium supplementation",
-            "Breathing exercises"
-        ],
-        sources=[
-            "Study: Magnesium and sleep quality (PubMed)",
-            "Ayurvedic principle: Vata imbalance and anxiety"
-        ]
+        message=result["message"],
+        context_used=result.get("context_used", []),
+        recommendations=result.get("recommendations"),
+        sources=result.get("sources")
     )
 
 
