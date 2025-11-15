@@ -30,31 +30,23 @@ async def analyze_voice(
 
     Accepts: WAV, MP3, M4A audio files
     """
-    # TODO: Implement voice emotion analysis
-    # 1. Load audio file
-    # 2. Extract features (MFCC, pitch, energy, etc.)
-    # 3. Run emotion classifier
-    # 4. Detect stress indicators (voice tremor, pitch variation)
+    from backend.services.voice_service import get_voice_service
+
+    # Read file bytes
+    file_bytes = await file.read()
+
+    # Analyze voice
+    service = get_voice_service()
+    result = await service.analyze_voice_file(file_bytes, user_id)
 
     return VoiceEmotionResponse(
-        id="temp_id",
-        user_id=user_id,
-        timestamp=datetime.now(),
-        emotion="anxious",
-        confidence=0.78,
-        emotional_state={
-            "neutral": 0.10,
-            "happy": 0.05,
-            "sad": 0.15,
-            "angry": 0.08,
-            "anxious": 0.78,
-            "stressed": 0.62
-        },
-        stress_indicators=[
-            "Elevated pitch variation",
-            "Voice tremor detected",
-            "Increased speech rate"
-        ]
+        id=result["id"],
+        user_id=result["user_id"],
+        timestamp=result["timestamp"],
+        emotion=result["emotion"],
+        confidence=result["confidence"],
+        emotional_state=result["emotional_state"],
+        stress_indicators=result["stress_indicators"]
     )
 
 

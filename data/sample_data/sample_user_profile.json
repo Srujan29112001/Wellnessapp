@@ -1,0 +1,39 @@
+{
+  "user_id": "demo_user",
+  "email": "demo@wellnessai.com",
+  "name": "Alex Johnson",
+  "age": 32,
+  "gender": "non-binary",
+  "dosha_type": "vata_pitta",
+  "health_goals": [
+    "Reduce stress and anxiety",
+    "Improve sleep quality",
+    "Boost energy levels",
+    "Maintain healthy weight"
+  ],
+  "dietary_restrictions": [
+    "vegetarian",
+    "gluten-sensitive"
+  ],
+  "medical_conditions": [],
+  "current_medications": [],
+  "allergies": [
+    "peanuts"
+  ],
+  "preferences": {
+    "notification_preferences": {
+      "proactive_check_ins": true,
+      "daily_summary": true,
+      "achievement_alerts": true
+    },
+    "privacy_settings": {
+      "data_retention_days": 365,
+      "share_anonymized_data": false
+    },
+    "interface_preferences": {
+      "theme": "light",
+      "language": "en",
+      "units": "metric"
+    }
+  }
+}

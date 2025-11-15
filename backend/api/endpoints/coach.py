@@ -55,29 +55,37 @@ async def chat_with_coach(
     - Recent EEG/voice/diet data
     - Long-term memory of past conversations
     """
-    # TODO: Implement LangChain-based coach
-    # 1. Retrieve user context (health data, preferences)
-    # 2. Search knowledge base (GraphRAG)
-    # 3. Generate response with LLM
-    # 4. Store conversation in memory
+    from backend.services.llm_coach_service import get_coach
 
-    return ChatResponse(
-        message="I understand you're feeling anxious and low on energy. Based on your recent EEG data showing elevated stress levels and your sleep log indicating only 5 hours last night, I recommend: 1) Prioritize 7-8 hours of sleep tonight, 2) Try a 10-minute breathing exercise (I can guide you), 3) Consider magnesium-rich foods like nuts and leafy greens. Would you like me to create a personalized plan?",
-        context_used=[
-            "Recent EEG analysis (high stress)",
-            "Sleep log (5 hours)",
-            "User preference: natural remedies"
-        ],
-        recommendations=[
-            "Improve sleep hygiene",
-            "Magnesium supplementation",
-            "Breathing exercises"
-        ],
-        sources=[
-            "Study: Magnesium and sleep quality (PubMed)",
-            "Ayurvedic principle: Vata imbalance and anxiety"
-        ]
-    )
+    try:
+        coach = get_coach()
+        result = await coach.chat(
+            user_id=user_id,
+            message=request.message,
+            user_context=None if request.include_context else {}
+        )
+
+        return ChatResponse(
+            message=result["message"],
+            context_used=result.get("context_used", []),
+            recommendations=result.get("recommendations"),
+            sources=result.get("sources")
+        )
+
+    except Exception as e:
+        # Fallback to demo response if LLM not configured
+        print(f"Coach service error: {e}. Using demo response.")
+        return ChatResponse(
+            message="I understand you're seeking wellness guidance. To provide personalized recommendations, I need access to an LLM service (OpenAI or Anthropic). Please configure your API keys in the .env file. In the meantime, I can suggest general wellness practices like regular sleep, balanced nutrition, and stress management techniques.",
+            context_used=["Demo mode - LLM not configured"],
+            recommendations=[
+                "Configure OPENAI_API_KEY or ANTHROPIC_API_KEY in .env",
+                "Maintain regular sleep schedule (7-8 hours)",
+                "Practice stress management (meditation, breathing)",
+                "Eat balanced, whole foods diet"
+            ],
+            sources=[]
+        )
 
 
 @router.get("/chat/history", response_model=List[ChatMessage])

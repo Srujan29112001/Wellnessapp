@@ -2,7 +2,7 @@
 Food Recognition Endpoints
 """
 from fastapi import APIRouter, UploadFile, File
-from typing import List, Dict
+from typing import List, Dict, Optional
 from datetime import datetime
 from pydantic import BaseModel
 
@@ -39,45 +39,23 @@ async def recognize_food(
 
     Accepts: JPG, PNG image files
     """
-    # TODO: Implement food recognition
-    # 1. Load and preprocess image
-    # 2. Run ViT-DINO model
-    # 3. Map to nutrition database
-    # 4. Generate recommendations
+    from backend.services.food_vision_service import get_food_service
+
+    # Read file bytes
+    file_bytes = await file.read()
+
+    # Recognize food
+    service = get_food_service()
+    result = await service.recognize_food(file_bytes, user_id)
 
     return FoodRecognitionResponse(
-        id="temp_id",
-        user_id=user_id,
-        timestamp=datetime.now(),
-        detected_foods=[
-            FoodItem(
-                name="Mixed salad",
-                confidence=0.92,
-                calories=150,
-                protein_g=5.0,
-                carbs_g=20.0,
-                fat_g=7.0
-            ),
-            FoodItem(
-                name="Grilled chicken",
-                confidence=0.87,
-                calories=250,
-                protein_g=35.0,
-                carbs_g=0.0,
-                fat_g=10.0
-            )
-        ],
-        total_calories=400,
-        nutritional_summary={
-            "protein_g": 40.0,
-            "carbs_g": 20.0,
-            "fat_g": 17.0,
-            "fiber_g": 5.0
-        },
-        recommendations=[
-            "Great protein-rich meal!",
-            "Consider adding complex carbs for sustained energy."
-        ]
+        id=result["id"],
+        user_id=result["user_id"],
+        timestamp=result["timestamp"],
+        detected_foods=[FoodItem(**food) for food in result["detected_foods"]],
+        total_calories=result["total_calories"],
+        nutritional_summary=result["nutritional_summary"],
+        recommendations=result["recommendations"]
     )
 
 
@@ -91,21 +69,17 @@ async def ocr_supplement_label(
 
     Accepts: JPG, PNG images of supplement bottles/labels
     """
-    # TODO: Implement OCR pipeline
-    # 1. Run OCR (Tesseract or EasyOCR)
-    # 2. Parse supplement name, ingredients, dosage
-    # 3. Match against supplement database
-    # 4. Check for interactions/contraindications
+    from backend.services.food_vision_service import get_food_service
 
-    return {
-        "id": "temp_id",
-        "user_id": user_id,
-        "timestamp": datetime.now(),
-        "supplement_name": "Ashwagandha Extract",
-        "dosage": "500mg",
-        "ingredients": ["Ashwagandha root extract", "Cellulose capsule"],
-        "active_compounds": {"Withanolides": "5%"},
-        "benefits": ["Stress reduction", "Anxiety relief", "Sleep support"],
-        "warnings": ["Consult doctor if pregnant or nursing"],
-        "contraindications": []
-    }
+    # Read file bytes
+    file_bytes = await file.read()
+
+    # Extract supplement info
+    service = get_food_service()
+    result = await service.ocr_supplement(file_bytes, user_id)
+
+    # Convert datetime to string for JSON serialization
+    if "timestamp" in result:
+        result["timestamp"] = result["timestamp"].isoformat()
+
+    return result
