@@ -1,0 +1,425 @@
+{
+  "supplements": [
+    {
+      "id": "supp_001",
+      "name": "Ashwagandha",
+      "common_names": ["Indian Ginseng", "Withania somnifera", "Winter Cherry"],
+      "category": "adaptogenic_herb",
+      "origin": "Ayurvedic",
+      "benefits": [
+        "Reduces stress and anxiety",
+        "Lowers cortisol levels",
+        "Improves sleep quality",
+        "Supports cognitive function",
+        "May enhance athletic performance",
+        "Supports thyroid function"
+      ],
+      "mechanisms": [
+        "Modulates HPA axis",
+        "GABAergic activity",
+        "Antioxidant properties",
+        "Anti-inflammatory effects"
+      ],
+      "dosage": {
+        "typical": "300-600mg daily",
+        "range": "250-1000mg",
+        "timing": "With meals, preferably evening for sleep support",
+        "forms": ["capsule", "powder", "tincture"]
+      },
+      "contraindications": [
+        "Pregnancy and breastfeeding",
+        "Autoimmune conditions (may stimulate immune system)",
+        "Thyroid medication (may interact)",
+        "Scheduled surgery (discontinue 2 weeks prior)"
+      ],
+      "interactions": [
+        "May enhance sedative effects",
+        "May lower blood pressure",
+        "May affect thyroid hormone levels",
+        "May interact with immunosuppressants"
+      ],
+      "side_effects": [
+        "Generally well tolerated",
+        "Rare: digestive upset, drowsiness"
+      ],
+      "evidence_level": "strong",
+      "scientific_studies": [
+        {
+          "pmid": "23439798",
+          "finding": "Ashwagandha root extract reduces cortisol by 27.9%",
+          "study_type": "RCT"
+        },
+        {
+          "pmid": "24497737",
+          "finding": "Significant reduction in anxiety scores",
+          "study_type": "Meta-analysis"
+        }
+      ],
+      "ayurvedic_properties": {
+        "rasa": ["bitter", "astringent"],
+        "virya": "heating",
+        "vipaka": "sweet",
+        "dosha_effects": {
+          "vata": "balancing",
+          "pitta": "neutral/may increase if excess",
+          "kapha": "balancing"
+        }
+      }
+    },
+    {
+      "id": "supp_002",
+      "name": "Magnesium",
+      "common_names": ["Mg"],
+      "category": "mineral",
+      "origin": "essential_nutrient",
+      "benefits": [
+        "Improves sleep quality",
+        "Reduces muscle cramps",
+        "Supports bone health",
+        "Regulates blood pressure",
+        "Reduces anxiety",
+        "Supports energy production"
+      ],
+      "mechanisms": [
+        "NMDA receptor antagonist",
+        "GABA agonist",
+        "Cofactor for 300+ enzymes",
+        "Regulates calcium channels"
+      ],
+      "dosage": {
+        "typical": "200-400mg daily",
+        "range": "200-600mg",
+        "timing": "Evening for sleep support",
+        "forms": ["glycinate", "citrate", "threonate", "oxide"]
+      },
+      "best_forms": {
+        "sleep": "Magnesium glycinate",
+        "cognitive": "Magnesium L-threonate",
+        "constipation": "Magnesium citrate"
+      },
+      "contraindications": [
+        "Kidney disease",
+        "Heart block"
+      ],
+      "interactions": [
+        "May reduce absorption of antibiotics (separate by 2 hours)",
+        "May interact with blood pressure medications"
+      ],
+      "side_effects": [
+        "High doses: diarrhea (except glycinate)",
+        "Generally well tolerated"
+      ],
+      "evidence_level": "strong",
+      "scientific_studies": [
+        {
+          "pmid": "23853635",
+          "finding": "Magnesium supplementation improves insomnia",
+          "study_type": "RCT"
+        }
+      ],
+      "deficiency_signs": [
+        "Muscle cramps",
+        "Poor sleep",
+        "Anxiety",
+        "Fatigue",
+        "Irregular heartbeat"
+      ],
+      "food_sources": [
+        "Leafy greens",
+        "Nuts and seeds",
+        "Legumes",
+        "Whole grains",
+        "Dark chocolate"
+      ]
+    },
+    {
+      "id": "supp_003",
+      "name": "Omega-3 (EPA/DHA)",
+      "common_names": ["Fish Oil", "EPA", "DHA"],
+      "category": "essential_fatty_acid",
+      "origin": "essential_nutrient",
+      "benefits": [
+        "Supports heart health",
+        "Reduces inflammation",
+        "Supports brain function",
+        "May reduce depression",
+        "Supports eye health",
+        "May reduce ADHD symptoms"
+      ],
+      "mechanisms": [
+        "Anti-inflammatory prostaglandins",
+        "Cell membrane incorporation",
+        "Neurotransmitter modulation"
+      ],
+      "dosage": {
+        "typical": "1000-2000mg combined EPA/DHA daily",
+        "range": "500-3000mg",
+        "timing": "With meals for absorption",
+        "forms": ["fish oil", "krill oil", "algae oil (vegan)"]
+      },
+      "ratios": {
+        "general_health": "EPA:DHA = 2:1",
+        "mood_support": "Higher EPA",
+        "cognitive": "Higher DHA"
+      },
+      "contraindications": [
+        "Bleeding disorders",
+        "Scheduled surgery (discontinue 2 weeks prior)"
+      ],
+      "interactions": [
+        "May enhance blood-thinning medications"
+      ],
+      "side_effects": [
+        "Fishy aftertaste (choose quality brand)",
+        "Mild digestive upset",
+        "Take with meals to minimize"
+      ],
+      "evidence_level": "strong",
+      "scientific_studies": [
+        {
+          "pmid": "19499625",
+          "finding": "EPA effective for depression",
+          "study_type": "Meta-analysis"
+        }
+      ],
+      "quality_considerations": [
+        "Third-party tested for mercury",
+        "Molecularly distilled",
+        "Triglyceride form preferred over ethyl ester"
+      ],
+      "food_sources": [
+        "Fatty fish (salmon, mackerel, sardines)",
+        "Algae (vegan source)",
+        "Flaxseed (ALA, needs conversion)"
+      ]
+    },
+    {
+      "id": "supp_004",
+      "name": "Vitamin D3",
+      "common_names": ["Cholecalciferol", "Sunshine Vitamin"],
+      "category": "vitamin",
+      "origin": "essential_nutrient",
+      "benefits": [
+        "Supports bone health",
+        "Boosts immune function",
+        "Improves mood",
+        "Supports muscle function",
+        "May reduce inflammation"
+      ],
+      "mechanisms": [
+        "Regulates calcium absorption",
+        "Modulates immune cells",
+        "Acts as hormone precursor"
+      ],
+      "dosage": {
+        "typical": "1000-4000 IU daily",
+        "range": "400-10000 IU (based on blood levels)",
+        "timing": "With fat-containing meal",
+        "forms": ["D3 (cholecalciferol)", "D2 (ergocalciferol)"]
+      },
+      "testing": {
+        "optimal_blood_level": "40-60 ng/mL",
+        "test": "25-hydroxyvitamin D"
+      },
+      "contraindications": [
+        "Hypercalcemia",
+        "Kidney stones (history)"
+      ],
+      "interactions": [
+        "Take with vitamin K2 for optimal calcium metabolism"
+      ],
+      "side_effects": [
+        "Generally safe",
+        "Very high doses may cause hypercalcemia"
+      ],
+      "evidence_level": "strong",
+      "deficiency_signs": [
+        "Fatigue",
+        "Depression",
+        "Bone pain",
+        "Frequent infections",
+        "Muscle weakness"
+      ],
+      "natural_sources": [
+        "Sunlight (15-30 min daily)",
+        "Fatty fish",
+        "Egg yolks",
+        "Fortified foods"
+      ]
+    },
+    {
+      "id": "supp_005",
+      "name": "L-Theanine",
+      "common_names": ["Theanine"],
+      "category": "amino_acid",
+      "origin": "green_tea",
+      "benefits": [
+        "Promotes relaxation without sedation",
+        "Improves focus",
+        "Reduces stress",
+        "Enhances sleep quality",
+        "Synergizes with caffeine"
+      ],
+      "mechanisms": [
+        "Increases GABA, serotonin, dopamine",
+        "Promotes alpha brain waves",
+        "Modulates glutamate"
+      ],
+      "dosage": {
+        "typical": "100-200mg",
+        "range": "50-400mg",
+        "timing": "Anytime, or 30-60 min before stressful event",
+        "forms": ["capsule", "powder", "tea"]
+      },
+      "contraindications": [
+        "Generally safe",
+        "Caution with blood pressure medications"
+      ],
+      "interactions": [
+        "May enhance effects of sedatives",
+        "May lower blood pressure"
+      ],
+      "side_effects": [
+        "Very well tolerated",
+        "Rare: mild drowsiness at high doses"
+      ],
+      "evidence_level": "moderate",
+      "synergies": {
+        "caffeine": "Enhances focus while reducing jitters (100mg L-theanine with 50-100mg caffeine)"
+      },
+      "natural_sources": [
+        "Green tea (20-45mg per cup)",
+        "Black tea (lower amounts)"
+      ]
+    },
+    {
+      "id": "supp_006",
+      "name": "Brahmi",
+      "common_names": ["Bacopa monnieri", "Water Hyssop"],
+      "category": "adaptogenic_herb",
+      "origin": "Ayurvedic",
+      "benefits": [
+        "Enhances memory",
+        "Improves cognitive function",
+        "Reduces anxiety",
+        "Supports learning",
+        "Antioxidant properties"
+      ],
+      "mechanisms": [
+        "Enhances dendritic growth",
+        "Modulates neurotransmitters",
+        "Antioxidant effects in brain"
+      ],
+      "dosage": {
+        "typical": "300mg daily (standardized extract)",
+        "range": "150-450mg",
+        "timing": "With meals",
+        "forms": ["capsule", "powder"]
+      },
+      "onset": "Effects typically seen after 4-6 weeks of consistent use",
+      "contraindications": [
+        "Pregnancy and breastfeeding"
+      ],
+      "interactions": [
+        "May enhance thyroid medications",
+        "May interact with acetylcholinesterase inhibitors"
+      ],
+      "side_effects": [
+        "Generally well tolerated",
+        "Rare: digestive upset"
+      ],
+      "evidence_level": "moderate",
+      "ayurvedic_properties": {
+        "rasa": ["bitter"],
+        "virya": "cooling",
+        "dosha_effects": {
+          "vata": "balancing",
+          "pitta": "balancing",
+          "kapha": "may increase in excess"
+        }
+      }
+    },
+    {
+      "id": "supp_007",
+      "name": "Turmeric (Curcumin)",
+      "common_names": ["Curcuma longa", "Haldi"],
+      "category": "anti_inflammatory_herb",
+      "origin": "Ayurvedic",
+      "benefits": [
+        "Powerful anti-inflammatory",
+        "Antioxidant",
+        "May support mood",
+        "Joint health",
+        "Digestive support"
+      ],
+      "mechanisms": [
+        "COX-2 inhibition",
+        "NF-κB pathway modulation",
+        "Antioxidant activity"
+      ],
+      "dosage": {
+        "typical": "500-1000mg curcumin daily",
+        "range": "500-2000mg",
+        "timing": "With meals, especially with fat",
+        "forms": ["capsule", "powder"]
+      },
+      "bioavailability": {
+        "issue": "Poor absorption",
+        "enhancers": [
+          "Black pepper (piperine) - increases 2000%",
+          "Fat/oil",
+          "Liposomal or phytosome formulations"
+        ]
+      },
+      "contraindications": [
+        "Gallbladder disease",
+        "Bleeding disorders"
+      ],
+      "interactions": [
+        "May enhance blood-thinning medications"
+      ],
+      "side_effects": [
+        "Generally safe",
+        "High doses may cause digestive upset"
+      ],
+      "evidence_level": "strong",
+      "ayurvedic_properties": {
+        "rasa": ["bitter", "pungent"],
+        "virya": "heating",
+        "dosha_effects": {
+          "vata": "neutral",
+          "pitta": "may increase in large amounts",
+          "kapha": "balancing"
+        }
+      }
+    }
+  ],
+  "interactions_matrix": {
+    "blood_thinners": ["Omega-3", "Turmeric", "Ashwagandha"],
+    "sedatives": ["Ashwagandha", "L-Theanine", "Magnesium"],
+    "blood_pressure_meds": ["Ashwagandha", "L-Theanine", "Magnesium"],
+    "thyroid_meds": ["Ashwagandha", "Brahmi"]
+  },
+  "stacks": {
+    "stress_anxiety": {
+      "primary": ["Ashwagandha", "Magnesium", "L-Theanine"],
+      "supporting": ["Omega-3"],
+      "timing": "Ashwagandha (morning/evening), L-Theanine (as needed), Magnesium (evening)"
+    },
+    "cognitive_focus": {
+      "primary": ["Brahmi", "L-Theanine", "Omega-3"],
+      "supporting": ["Vitamin D3"],
+      "timing": "Brahmi (morning), L-Theanine + caffeine (morning)"
+    },
+    "sleep": {
+      "primary": ["Magnesium", "Ashwagandha"],
+      "supporting": ["L-Theanine"],
+      "timing": "All in evening, 30-60 min before bed"
+    },
+    "inflammation": {
+      "primary": ["Turmeric", "Omega-3"],
+      "supporting": ["Vitamin D3"],
+      "timing": "With meals for absorption"
+    }
+  }
+}

@@ -1,0 +1,206 @@
+{
+  "doshas": {
+    "vata": {
+      "name": "Vata",
+      "elements": ["air", "space"],
+      "qualities": ["dry", "light", "cold", "rough", "subtle", "mobile"],
+      "characteristics": {
+        "physical": [
+          "Light, thin build",
+          "Dry skin and hair",
+          "Cold hands and feet",
+          "Variable appetite",
+          "Light sleep"
+        ],
+        "mental": [
+          "Quick thinking",
+          "Creative and enthusiastic",
+          "Tendency toward anxiety when imbalanced",
+          "Variable energy levels",
+          "Loves movement and change"
+        ]
+      },
+      "imbalance_signs": [
+        "Anxiety and worry",
+        "Insomnia",
+        "Dry skin",
+        "Constipation",
+        "Restlessness",
+        "Difficulty focusing"
+      ],
+      "balancing_foods": [
+        "Warm, cooked foods",
+        "Root vegetables",
+        "Healthy fats (ghee, oils)",
+        "Sweet, sour, and salty tastes",
+        "Grounding grains (rice, oats)"
+      ],
+      "avoid_foods": [
+        "Raw, cold foods",
+        "Excessive beans",
+        "Dry, crispy foods",
+        "Bitter, pungent, astringent tastes"
+      ],
+      "recommended_herbs": [
+        "Ashwagandha - calming, grounding",
+        "Brahmi - supports focus",
+        "Triphala - digestive support",
+        "Shatavari - nourishing"
+      ],
+      "lifestyle": [
+        "Maintain regular routines",
+        "Practice grounding activities (yoga, walking in nature)",
+        "Avoid excessive stimulation",
+        "Prioritize adequate sleep",
+        "Oil massage (Abhyanga)",
+        "Warm baths"
+      ]
+    },
+    "pitta": {
+      "name": "Pitta",
+      "elements": ["fire", "water"],
+      "qualities": ["hot", "sharp", "light", "oily", "liquid"],
+      "characteristics": {
+        "physical": [
+          "Medium build",
+          "Warm body temperature",
+          "Good digestion",
+          "Strong appetite",
+          "Sharp intellect"
+        ],
+        "mental": [
+          "Focused and ambitious",
+          "Natural leaders",
+          "Tendency toward irritability when imbalanced",
+          "Sharp memory",
+          "Enjoys challenges"
+        ]
+      },
+      "imbalance_signs": [
+        "Irritability and anger",
+        "Inflammation",
+        "Heartburn or acid reflux",
+        "Skin rashes",
+        "Excessive competitiveness",
+        "Impatience"
+      ],
+      "balancing_foods": [
+        "Cool, refreshing foods",
+        "Sweet fruits",
+        "Coconut",
+        "Leafy greens",
+        "Sweet, bitter, and astringent tastes"
+      ],
+      "avoid_foods": [
+        "Spicy, hot foods",
+        "Fried foods",
+        "Alcohol",
+        "Sour and fermented foods",
+        "Red meat"
+      ],
+      "recommended_herbs": [
+        "Amalaki - cooling, antioxidant",
+        "Neem - purifying",
+        "Coriander - cooling digestive",
+        "Aloe vera - soothing"
+      ],
+      "lifestyle": [
+        "Avoid excessive heat",
+        "Practice cooling activities (swimming, moonlight walks)",
+        "Meditation for emotional balance",
+        "Avoid overworking",
+        "Spend time in nature",
+        "Practice non-competitive activities"
+      ]
+    },
+    "kapha": {
+      "name": "Kapha",
+      "elements": ["water", "earth"],
+      "qualities": ["heavy", "slow", "cool", "oily", "smooth", "stable"],
+      "characteristics": {
+        "physical": [
+          "Larger, sturdy build",
+          "Soft, smooth skin",
+          "Slow digestion",
+          "Steady energy",
+          "Deep, sound sleep"
+        ],
+        "mental": [
+          "Calm and steady",
+          "Loving and compassionate",
+          "Tendency toward attachment and lethargy when imbalanced",
+          "Good long-term memory",
+          "Enjoys stability"
+        ]
+      },
+      "imbalance_signs": [
+        "Weight gain",
+        "Lethargy and sluggishness",
+        "Congestion and mucus",
+        "Depression",
+        "Attachment and possessiveness",
+        "Resistance to change"
+      },
+      "balancing_foods": [
+        "Light, warm foods",
+        "Pungent, bitter, and astringent tastes",
+        "Steamed vegetables",
+        "Beans and legumes",
+        "Spices (ginger, black pepper)"
+      ],
+      "avoid_foods": [
+        "Heavy, oily foods",
+        "Dairy products",
+        "Sweet and salty foods",
+        "Cold foods and drinks",
+        "Excessive wheat"
+      ],
+      "recommended_herbs": [
+        "Trikatu - stimulating digestion",
+        "Guggul - supports metabolism",
+        "Turmeric - anti-inflammatory",
+        "Punarnava - detoxifying"
+      ],
+      "lifestyle": [
+        "Regular exercise and movement",
+        "Wake up early",
+        "Avoid daytime napping",
+        "Seek variety and stimulation",
+        "Dry brushing",
+        "Invigorating practices (vigorous yoga, running)"
+      ]
+    }
+  },
+  "assessment_questions": {
+    "physical_build": {
+      "vata": "Thin, light frame",
+      "pitta": "Medium, athletic build",
+      "kapha": "Large, sturdy frame"
+    },
+    "skin_type": {
+      "vata": "Dry, rough, thin",
+      "pitta": "Soft, oily, warm",
+      "kapha": "Thick, moist, cool"
+    },
+    "appetite": {
+      "vata": "Variable, irregular",
+      "pitta": "Strong, sharp",
+      "kapha": "Steady, can skip meals"
+    },
+    "sleep": {
+      "vata": "Light, interrupted",
+      "pitta": "Sound, moderate",
+      "kapha": "Deep, heavy"
+    },
+    "stress_response": {
+      "vata": "Anxious, worried",
+      "pitta": "Irritable, angry",
+      "kapha": "Withdrawn, depressed"
+    },
+    "energy": {
+      "vata": "Bursts of energy, quickly exhausted",
+      "pitta": "Moderate, steady",
+      "kapha": "Steady, enduring"
+    }
+  }
+}
