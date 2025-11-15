@@ -5,8 +5,14 @@ from fastapi import APIRouter, HTTPException
 from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel
+import uuid
+import logging
+
+from backend.services.llm_coach import get_wellness_coach
+from backend.database.mongo import get_mongo_db
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 # Schemas
@@ -55,29 +61,21 @@ async def chat_with_coach(
     - Recent EEG/voice/diet data
     - Long-term memory of past conversations
     """
-    # TODO: Implement LangChain-based coach
-    # 1. Retrieve user context (health data, preferences)
-    # 2. Search knowledge base (GraphRAG)
-    # 3. Generate response with LLM
-    # 4. Store conversation in memory
+    try:
+        # Get wellness coach for this user
+        coach = get_wellness_coach(user_id)
 
-    return ChatResponse(
-        message="I understand you're feeling anxious and low on energy. Based on your recent EEG data showing elevated stress levels and your sleep log indicating only 5 hours last night, I recommend: 1) Prioritize 7-8 hours of sleep tonight, 2) Try a 10-minute breathing exercise (I can guide you), 3) Consider magnesium-rich foods like nuts and leafy greens. Would you like me to create a personalized plan?",
-        context_used=[
-            "Recent EEG analysis (high stress)",
-            "Sleep log (5 hours)",
-            "User preference: natural remedies"
-        ],
-        recommendations=[
-            "Improve sleep hygiene",
-            "Magnesium supplementation",
-            "Breathing exercises"
-        ],
-        sources=[
-            "Study: Magnesium and sleep quality (PubMed)",
-            "Ayurvedic principle: Vata imbalance and anxiety"
-        ]
-    )
+        # Chat with the coach
+        response = await coach.chat(
+            message=request.message,
+            include_context=request.include_context
+        )
+
+        return ChatResponse(**response)
+
+    except Exception as e:
+        logger.error(f"Error in coach chat: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/chat/history", response_model=List[ChatMessage])
@@ -88,8 +86,29 @@ async def get_chat_history(
     """
     Get chat history with wellness coach
     """
-    # TODO: Implement database query
-    return []
+    try:
+        db = get_mongo_db()
+
+        cursor = db.chat_messages.find(
+            {"user_id": user_id}
+        ).sort("timestamp", -1).limit(limit)
+
+        messages = []
+        async for msg in cursor:
+            messages.append(ChatMessage(
+                role=msg.get("role"),
+                content=msg.get("content"),
+                timestamp=msg.get("timestamp")
+            ))
+
+        # Reverse to get chronological order
+        messages.reverse()
+
+        return messages
+
+    except Exception as e:
+        logger.error(f"Error fetching chat history: {e}")
+        return []
 
 
 @router.post("/session/start", response_model=GuidedSessionResponse)
@@ -100,23 +119,52 @@ async def start_guided_session(
     """
     Start a guided wellness session (breathing, meditation, yoga)
     """
-    # TODO: Implement guided session generation
+    session_id = str(uuid.uuid4())
 
-    if request.session_type == "breathing":
-        instructions = [
-            "Find a comfortable seated position",
+    # Session templates
+    sessions = {
+        "breathing": [
+            "Find a comfortable seated position with your back straight",
             "Close your eyes and relax your shoulders",
-            "Breathe in slowly through your nose for 4 counts",
+            "Take a deep breath in through your nose for 4 counts",
             "Hold your breath for 4 counts",
             "Exhale slowly through your mouth for 4 counts",
             "Hold empty for 4 counts",
-            "Repeat this cycle for the session duration"
+            "Repeat this cycle for the session duration",
+            "Focus on the sensation of your breath",
+            "If your mind wanders, gently bring it back to your breathing"
+        ],
+        "meditation": [
+            "Sit comfortably with your spine straight",
+            "Close your eyes or maintain a soft gaze",
+            "Bring awareness to your breath without changing it",
+            "Notice the natural rhythm of inhalation and exhalation",
+            "When thoughts arise, acknowledge them without judgment",
+            "Gently return your focus to your breath",
+            "Continue this practice for the session duration",
+            "Gradually expand your awareness to your whole body",
+            "When ready, slowly open your eyes"
+        ],
+        "yoga": [
+            "Start in a standing position (Mountain Pose)",
+            "Raise your arms overhead as you inhale deeply",
+            "Exhale and fold forward from the hips",
+            "Inhale, lift halfway with a flat back",
+            "Exhale and fold forward again",
+            "Inhale and rise up, reaching arms overhead",
+            "Exhale and return to standing",
+            "Repeat this sun salutation sequence",
+            "Move slowly and mindfully with your breath"
         ]
-    else:
-        instructions = ["Session type not yet implemented"]
+    }
+
+    instructions = sessions.get(
+        request.session_type,
+        ["Session type not yet implemented. Please try: breathing, meditation, or yoga"]
+    )
 
     return GuidedSessionResponse(
-        id="temp_id",
+        id=session_id,
         session_type=request.session_type,
         instructions=instructions,
         duration_minutes=request.duration_minutes
@@ -136,11 +184,66 @@ async def proactive_check_in(
     - Doing a quick exercise
     - Stress management techniques
     """
-    # TODO: Implement agentic behavior
+    try:
+        from sqlalchemy import select
+        from backend.models.postgres_models import EEGAnalysis, HealthMetric
+        from backend.database.postgres import AsyncSessionLocal
+        from datetime import timedelta
 
-    return {
-        "message": "I noticed you haven't taken a break in 3 hours and your last EEG reading showed declining focus. Would you like to try a 5-minute stretch routine?",
-        "urgency": "medium",
-        "suggested_action": "take_break",
-        "session_type": "stretching"
-    }
+        async with AsyncSessionLocal() as session:
+            # Get latest EEG
+            result = await session.execute(
+                select(EEGAnalysis)
+                .where(EEGAnalysis.user_id == user_id)
+                .order_by(EEGAnalysis.timestamp.desc())
+                .limit(1)
+            )
+            latest_eeg = result.scalar_one_or_none()
+
+            # Get today's metrics
+            today = datetime.now().date()
+            result = await session.execute(
+                select(HealthMetric)
+                .where(HealthMetric.user_id == user_id)
+                .where(HealthMetric.date == today)
+            )
+            today_metrics = result.scalar_one_or_none()
+
+            # Determine proactive message
+            if latest_eeg and latest_eeg.stress_level > 0.7:
+                return {
+                    "message": f"I noticed your stress levels are elevated ({latest_eeg.stress_level:.0%}). Would you like to try a 5-minute breathing exercise to help you relax?",
+                    "urgency": "high",
+                    "suggested_action": "breathing_exercise",
+                    "session_type": "breathing"
+                }
+            elif latest_eeg and latest_eeg.focus_level < 0.4:
+                return {
+                    "message": f"Your focus seems to be declining ({latest_eeg.focus_level:.0%}). Taking a short break or doing some light stretching might help!",
+                    "urgency": "medium",
+                    "suggested_action": "take_break",
+                    "session_type": "stretching"
+                }
+            elif today_metrics and today_metrics.steps and today_metrics.steps < 2000:
+                return {
+                    "message": f"You've only taken {today_metrics.steps} steps today. How about a quick walk to boost your energy?",
+                    "urgency": "low",
+                    "suggested_action": "take_walk",
+                    "session_type": "activity"
+                }
+            else:
+                return {
+                    "message": "You're doing great! Keep up the healthy habits. Remember to stay hydrated!",
+                    "urgency": "low",
+                    "suggested_action": "drink_water",
+                    "session_type": "reminder"
+                }
+
+    except Exception as e:
+        logger.error(f"Error in proactive check-in: {e}")
+        return {
+            "message": "Stay mindful of your wellness throughout the day!",
+            "urgency": "low",
+            "suggested_action": "general_reminder",
+            "session_type": "reminder"
+        }
