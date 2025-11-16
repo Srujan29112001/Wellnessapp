@@ -1,0 +1,175 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: wellness-ai
+spec:
+  replicas: 3  # Horizontal scaling
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: wellness-ai-backend:latest  # Build from docker/Dockerfile.backend
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        env:
+        # ConfigMap values
+        - name: APP_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: wellness-ai-config
+              key: APP_NAME
+        - name: ENVIRONMENT
+          value: "production"
+        - name: API_V1_PREFIX
+          valueFrom:
+            configMapKeyRef:
+              name: wellness-ai-config
+              key: API_V1_PREFIX
+
+        # Database connections
+        - name: POSTGRES_HOST
+          value: "postgres"
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: wellness-ai-config
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wellness-ai-secrets
+              key: POSTGRES_PASSWORD
+
+        - name: MONGODB_HOST
+          value: "mongodb"
+        - name: MONGODB_PORT
+          value: "27017"
+        - name: MONGODB_DB
+          valueFrom:
+            configMapKeyRef:
+              name: wellness-ai-config
+              key: MONGODB_DB
+        - name: MONGODB_USER
+          value: "admin"
+        - name: MONGODB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wellness-ai-secrets
+              key: MONGODB_PASSWORD
+
+        - name: REDIS_HOST
+          value: "redis"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wellness-ai-secrets
+              key: REDIS_PASSWORD
+
+        - name: NEO4J_URI
+          value: "bolt://neo4j:7687"
+        - name: NEO4J_USER
+          value: "neo4j"
+        - name: NEO4J_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wellness-ai-secrets
+              key: NEO4J_PASSWORD
+
+        # API Keys
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: wellness-ai-secrets
+              key: OPENAI_API_KEY
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: wellness-ai-secrets
+              key: ANTHROPIC_API_KEY
+
+        # Feature flags
+        - name: ENABLE_EEG_ANALYSIS
+          valueFrom:
+            configMapKeyRef:
+              name: wellness-ai-config
+              key: ENABLE_EEG_ANALYSIS
+        - name: ENABLE_VOICE_ANALYSIS
+          valueFrom:
+            configMapKeyRef:
+              name: wellness-ai-config
+              key: ENABLE_VOICE_ANALYSIS
+
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: wellness-ai
+spec:
+  selector:
+    app: backend
+  ports:
+  - port: 8000
+    targetPort: 8000
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-ingress
+  namespace: wellness-ai
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - api.wellness-ai.example.com
+    secretName: backend-tls
+  rules:
+  - host: api.wellness-ai.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend
+            port:
+              number: 8000
