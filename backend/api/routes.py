@@ -12,13 +12,15 @@ from backend.api.endpoints import (
     recommendations,
     users,
     meals,
-    supplements
+    supplements,
+    auth
 )
 
 # Create main API router
 api_router = APIRouter()
 
 # Include all endpoint routers
+api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 api_router.include_router(health.router, prefix="/health", tags=["Health Metrics"])
 api_router.include_router(eeg.router, prefix="/eeg", tags=["EEG Analysis"])
 api_router.include_router(voice.router, prefix="/voice", tags=["Voice Analysis"])

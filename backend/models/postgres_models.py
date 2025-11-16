@@ -8,7 +8,7 @@ from datetime import datetime
 import uuid
 import enum
 
-from backend.database.postgres import Base
+from backend.database.base import Base
 
 
 def generate_uuid():
