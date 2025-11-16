@@ -74,7 +74,7 @@ async def chat_with_coach(
         return ChatResponse(
             message=response["content"],
             context_used=response.get("context_used", []),
-            recommendations=None,  # Could extract these from response
+            recommendations=response.get("recommendations"),
             sources=response.get("sources", [])
         )
     except Exception as e:
