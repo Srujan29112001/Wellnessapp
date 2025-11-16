@@ -11,6 +11,7 @@ import plotly.express as px
 from datetime import datetime, timedelta, date
 import os
 import io
+import time
 
 # Configuration
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
@@ -84,16 +85,18 @@ st.sidebar.markdown("---")
 
 page = st.sidebar.radio(
     "Navigate",
-    ["🏠 Dashboard", "🧠 EEG Analysis", "💬 AI Coach", "📊 Health Metrics", "🥗 Nutrition", "💊 Supplements", "⚙️ Settings"]
+    ["🏠 Dashboard", "🌟 Life Optimization", "📅 My Plan", "🧠 EEG Analysis", "💬 AI Coach", "📊 Health Metrics", "🥗 Nutrition", "💊 Supplements", "⚙️ Settings"]
 )
 
 st.sidebar.markdown("---")
 st.sidebar.info("""
 **Wellness AI** combines:
-- EEG brainwave analysis
-- AI wellness coaching
-- Personalized recommendations
-- Ayurvedic principles
+- 🌟 Life Optimization System
+- 🧠 EEG brainwave analysis
+- 💬 AI wellness coaching
+- 🥗 Personalized meal plans
+- 📅 Optimized daily schedules
+- 🧘 Ayurvedic principles
 """)
 
 # ============================================================================
@@ -240,6 +243,811 @@ if page == "🏠 Dashboard":
             Start logging your health data to receive personalized recommendations.
             </div>
             """, unsafe_allow_html=True)
+
+# ============================================================================
+# PAGE: Life Optimization - Assessment Wizard
+# ============================================================================
+elif page == "🌟 Life Optimization":
+    st.markdown("<h1 class='main-header'>🌟 Life Optimization System</h1>", unsafe_allow_html=True)
+
+    st.markdown("""
+    ### Create Your Personalized Wellness Plan
+
+    Complete this comprehensive assessment to receive:
+    - **Personalized Meal Plans** (budget-optimized, dosha-balanced)
+    - **Optimized Daily Schedules** (energy-based, chronotype-aligned)
+    - **Nutritional Guidance** (macros, micros, Ayurvedic)
+    - **Holistic Wellness Tracking** (6-dimensional scoring)
+    """)
+
+    # Check if profile exists
+    user_id = st.session_state.user_id
+    profile_response = make_api_request("GET", f"/life-optimization/profile/{user_id}")
+
+    has_profile = profile_response is not None
+
+    if has_profile:
+        st.success("✅ Profile Complete! View your personalized plan in '📅 My Plan'")
+
+        # Show profile summary
+        st.markdown("### Your Profile Summary")
+
+        profile = profile_response['profile']
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            st.metric("Age", profile['physical']['age'])
+            st.metric("Dosha Type", profile['personality']['dosha_type'])
+
+        with col2:
+            st.metric("Primary Goal", profile['goals']['primary_goal'].replace('_', ' ').title())
+            st.metric("Chronotype", profile['personality']['chronotype'])
+
+        with col3:
+            st.metric("Diet Type", profile['dietary_preferences']['diet_type'])
+            st.metric("Weekly Budget", f"${profile['dietary_preferences']['budget_per_week']}")
+
+        with col4:
+            if 'metabolic_profile' in profile:
+                st.metric("Daily Calories", f"{int(profile['metabolic_profile']['target_calories'])}")
+                st.metric("TDEE", f"{int(profile['metabolic_profile']['tdee'])}")
+
+        st.markdown("---")
+
+        if st.button("🔄 Update Profile", use_container_width=True):
+            st.session_state.editing_profile = True
+            st.rerun()
+
+    # Assessment wizard (multi-step form)
+    if not has_profile or st.session_state.get('editing_profile', False):
+        st.markdown("### Complete Your Wellness Assessment")
+
+        # Initialize session state for wizard
+        if 'wizard_step' not in st.session_state:
+            st.session_state.wizard_step = 0
+
+        if 'wizard_data' not in st.session_state:
+            st.session_state.wizard_data = {}
+
+        step = st.session_state.wizard_step
+        total_steps = 9
+
+        # Progress bar
+        progress = (step + 1) / total_steps
+        st.progress(progress, text=f"Step {step + 1} of {total_steps}")
+
+        # Step 0: Basic Info
+        if step == 0:
+            st.subheader("📋 Step 1: Basic Information")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                age = st.number_input("Age", min_value=18, max_value=100, value=30)
+                height_cm = st.number_input("Height (cm)", min_value=140, max_value=220, value=170)
+                weight_kg = st.number_input("Weight (kg)", min_value=40, max_value=200, value=70)
+
+            with col2:
+                gender = st.selectbox("Gender", ["male", "female", "other"])
+                activity_level = st.selectbox(
+                    "Activity Level",
+                    ["sedentary", "light", "moderate", "very_active", "extremely_active"],
+                    index=2
+                )
+
+            if st.button("Next →", use_container_width=True):
+                st.session_state.wizard_data.update({
+                    'age': age,
+                    'gender': gender,
+                    'height_cm': height_cm,
+                    'weight_kg': weight_kg,
+                    'activity_level': activity_level
+                })
+                st.session_state.wizard_step += 1
+                st.rerun()
+
+        # Step 1: Birth Details (for astrology)
+        elif step == 1:
+            st.subheader("🌟 Step 2: Birth Details (Optional)")
+            st.info("Birth details enable astrological insights and optimal timing guidance")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                birth_date = st.date_input("Birth Date", value=datetime(1990, 1, 1))
+                birth_time = st.time_input("Birth Time (if known)")
+
+            with col2:
+                birth_place = st.text_input("Birth Place (City, Country)", value="Mumbai, India")
+                latitude = st.number_input("Latitude", value=19.0760, format="%.4f")
+                longitude = st.number_input("Longitude", value=72.8777, format="%.4f")
+
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("← Back"):
+                    st.session_state.wizard_step -= 1
+                    st.rerun()
+            with col2:
+                if st.button("Next →", use_container_width=True):
+                    st.session_state.wizard_data.update({
+                        'birth_date': birth_date.isoformat(),
+                        'birth_time': birth_time.isoformat(),
+                        'birth_place': birth_place,
+                        'latitude': latitude,
+                        'longitude': longitude
+                    })
+                    st.session_state.wizard_step += 1
+                    st.rerun()
+
+        # Step 2: Personality & Constitution
+        elif step == 2:
+            st.subheader("🧘 Step 3: Personality & Constitution")
+
+            chronotype = st.selectbox(
+                "Chronotype (Sleep Pattern)",
+                ["early_bird", "night_owl", "intermediate"],
+                help="When do you feel most energetic?"
+            )
+
+            st.markdown("**Dosha Type** (Ayurvedic Constitution)")
+            st.info("Answer based on your natural tendencies, not current state")
+
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                vata_pct = st.slider("Vata %", 0, 100, 33, help="Light, creative, anxious when imbalanced")
+            with col2:
+                pitta_pct = st.slider("Pitta %", 0, 100, 33, help="Intense, driven, irritable when imbalanced")
+            with col3:
+                kapha_pct = st.slider("Kapha %", 0, 100, 34, help="Stable, calm, lethargic when imbalanced")
+
+            # Auto-balance doshas
+            total_dosha = vata_pct + pitta_pct + kapha_pct
+            if total_dosha != 100:
+                st.warning(f"Dosha percentages should total 100% (currently {total_dosha}%)")
+
+            # Determine primary dosha
+            doshas = {'vata': vata_pct, 'pitta': pitta_pct, 'kapha': kapha_pct}
+            sorted_doshas = sorted(doshas.items(), key=lambda x: x[1], reverse=True)
+
+            if sorted_doshas[0][1] - sorted_doshas[1][1] > 10:
+                dosha_type = sorted_doshas[0][0]
+            else:
+                dosha_type = f"{sorted_doshas[0][0]}-{sorted_doshas[1][0]}"
+
+            st.success(f"Your Dosha Type: **{dosha_type}**")
+
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("← Back"):
+                    st.session_state.wizard_step -= 1
+                    st.rerun()
+            with col2:
+                if st.button("Next →", use_container_width=True):
+                    st.session_state.wizard_data.update({
+                        'chronotype': chronotype,
+                        'dosha_type': dosha_type,
+                        'vata_pct': vata_pct,
+                        'pitta_pct': pitta_pct,
+                        'kapha_pct': kapha_pct
+                    })
+                    st.session_state.wizard_step += 1
+                    st.rerun()
+
+        # Step 3: Health Profile
+        elif step == 3:
+            st.subheader("🏥 Step 4: Health Profile")
+
+            conditions = st.multiselect(
+                "Health Conditions",
+                ["Diabetes", "Hypertension", "Heart Disease", "Asthma", "Arthritis",
+                 "Thyroid Issues", "PCOS", "IBS", "Anxiety", "Depression"],
+                help="Select all that apply"
+            )
+
+            allergies = st.multiselect(
+                "Food Allergies",
+                ["Peanuts", "Tree Nuts", "Dairy", "Eggs", "Soy", "Gluten", "Shellfish", "Fish"],
+                help="Select all that apply"
+            )
+
+            deficiencies = st.multiselect(
+                "Known Nutrient Deficiencies",
+                ["Vitamin D", "Vitamin B12", "Iron", "Calcium", "Magnesium", "Omega-3"],
+                help="From recent blood work"
+            )
+
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("← Back"):
+                    st.session_state.wizard_step -= 1
+                    st.rerun()
+            with col2:
+                if st.button("Next →", use_container_width=True):
+                    st.session_state.wizard_data.update({
+                        'conditions': conditions,
+                        'allergies': [a.lower() for a in allergies],
+                        'deficiencies': [d.lower().replace(' ', '_') for d in deficiencies]
+                    })
+                    st.session_state.wizard_step += 1
+                    st.rerun()
+
+        # Step 4: Dietary Preferences
+        elif step == 4:
+            st.subheader("🥗 Step 5: Dietary Preferences")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                diet_type = st.selectbox(
+                    "Diet Type",
+                    ["omnivore", "vegetarian", "vegan", "pescatarian", "paleo", "keto"],
+                    index=1
+                )
+
+                cuisines = st.multiselect(
+                    "Preferred Cuisines",
+                    ["indian", "mediterranean", "mexican", "chinese", "thai", "italian",
+                     "japanese", "middle_eastern", "american"],
+                    default=["indian"]
+                )
+
+            with col2:
+                budget_per_week = st.number_input("Weekly Food Budget", min_value=20, max_value=500, value=100, step=10)
+                budget_currency = st.selectbox("Currency", ["USD", "INR", "EUR", "GBP"], index=0)
+
+                cooking_skill = st.selectbox(
+                    "Cooking Skill",
+                    ["beginner", "intermediate", "advanced"],
+                    index=1
+                )
+
+                cooking_time = st.slider("Time Available per Meal (minutes)", 15, 90, 45, step=5)
+
+            disliked_foods = st.text_input("Disliked Foods (comma-separated)", value="mushrooms")
+
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("← Back"):
+                    st.session_state.wizard_step -= 1
+                    st.rerun()
+            with col2:
+                if st.button("Next →", use_container_width=True):
+                    st.session_state.wizard_data.update({
+                        'diet_type': diet_type,
+                        'cuisines': cuisines,
+                        'budget_per_week': budget_per_week,
+                        'budget_currency': budget_currency,
+                        'cooking_skill': cooking_skill,
+                        'cooking_time': cooking_time,
+                        'disliked_foods': [f.strip() for f in disliked_foods.split(',') if f.strip()]
+                    })
+                    st.session_state.wizard_step += 1
+                    st.rerun()
+
+        # Step 5: Lifestyle
+        elif step == 5:
+            st.subheader("💼 Step 6: Lifestyle & Work")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                region = st.text_input("Region/City", value="Mumbai, Maharashtra, India")
+                country_code = st.text_input("Country Code", value="IN", max_chars=2)
+                occupation = st.text_input("Occupation", value="Software Engineer")
+
+            with col2:
+                work_schedule = st.selectbox("Work Schedule", ["office", "remote", "hybrid", "shift_work"])
+                work_hours = st.text_input("Typical Work Hours", value="9:00-18:00",
+                                          help="Format: HH:MM-HH:MM")
+
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("← Back"):
+                    st.session_state.wizard_step -= 1
+                    st.rerun()
+            with col2:
+                if st.button("Next →", use_container_width=True):
+                    st.session_state.wizard_data.update({
+                        'region': region,
+                        'country_code': country_code,
+                        'occupation': occupation,
+                        'work_schedule': work_schedule,
+                        'work_hours': work_hours
+                    })
+                    st.session_state.wizard_step += 1
+                    st.rerun()
+
+        # Step 6: Sleep Preferences
+        elif step == 6:
+            st.subheader("😴 Step 7: Sleep Preferences")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                ideal_sleep = st.slider("Ideal Sleep Duration (hours)", 6.0, 10.0, 7.5, step=0.5)
+                bedtime = st.time_input("Preferred Bedtime", value=datetime.strptime("22:30", "%H:%M").time())
+
+            with col2:
+                wake_time = st.time_input("Preferred Wake Time", value=datetime.strptime("06:00", "%H:%M").time())
+                sleep_quality = st.slider("Current Sleep Quality (0-10)", 0, 10, 7)
+
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("← Back"):
+                    st.session_state.wizard_step -= 1
+                    st.rerun()
+            with col2:
+                if st.button("Next →", use_container_width=True):
+                    st.session_state.wizard_data.update({
+                        'ideal_sleep': ideal_sleep,
+                        'bedtime': bedtime.isoformat(),
+                        'wake_time': wake_time.isoformat(),
+                        'sleep_quality': sleep_quality
+                    })
+                    st.session_state.wizard_step += 1
+                    st.rerun()
+
+        # Step 7: Goals & Priorities
+        elif step == 7:
+            st.subheader("🎯 Step 8: Goals & Priorities")
+
+            primary_goal = st.selectbox(
+                "Primary Wellness Goal",
+                ["weight_loss", "muscle_gain", "physical_strength", "mental_strength",
+                 "spiritual_strength", "stress_reduction", "energy_boost", "overall_health"],
+                index=2
+            )
+
+            timeline = st.selectbox("Timeline", ["1_month", "3_months", "6_months", "1_year"], index=1)
+            urgency = st.selectbox("Urgency", ["gradual", "balanced", "aggressive"], index=1)
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                meditation_min = st.slider("Daily Meditation (minutes)", 0, 60, 20, step=5)
+                exercise_min = st.slider("Daily Exercise (minutes)", 0, 120, 45, step=5)
+
+            with col2:
+                st.markdown("**Priority Levels (0-10)**")
+                priority_nutrition = st.slider("Nutrition", 0, 10, 8)
+                priority_exercise = st.slider("Exercise", 0, 10, 7)
+                priority_sleep = st.slider("Sleep", 0, 10, 8)
+                priority_stress = st.slider("Stress Management", 0, 10, 7)
+                priority_spiritual = st.slider("Spiritual Practice", 0, 10, 6)
+                priority_budget = st.slider("Budget Adherence", 0, 10, 5)
+
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("← Back"):
+                    st.session_state.wizard_step -= 1
+                    st.rerun()
+            with col2:
+                if st.button("Next →", use_container_width=True):
+                    st.session_state.wizard_data.update({
+                        'primary_goal': primary_goal,
+                        'timeline': timeline,
+                        'urgency': urgency,
+                        'meditation_min': meditation_min,
+                        'exercise_min': exercise_min,
+                        'priority_nutrition': priority_nutrition,
+                        'priority_exercise': priority_exercise,
+                        'priority_sleep': priority_sleep,
+                        'priority_stress': priority_stress,
+                        'priority_spiritual': priority_spiritual,
+                        'priority_budget': priority_budget
+                    })
+                    st.session_state.wizard_step += 1
+                    st.rerun()
+
+        # Step 8: Custom Preferences
+        elif step == 8:
+            st.subheader("⚙️ Step 9: Additional Preferences")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                intermittent_fasting = st.checkbox("Practice Intermittent Fasting")
+                fasting_window = None
+                if intermittent_fasting:
+                    fasting_window = st.selectbox("Fasting Window", ["16:8", "18:6", "20:4"], index=0)
+
+                exercise_prefs = st.multiselect(
+                    "Exercise Preferences",
+                    ["yoga", "weights", "cardio", "swimming", "cycling", "pilates", "martial_arts"],
+                    default=["yoga"]
+                )
+
+            with col2:
+                spiritual_practices = st.multiselect(
+                    "Spiritual Practices",
+                    ["meditation", "prayer", "chanting", "journaling", "yoga_nidra"],
+                    default=["meditation"]
+                )
+
+                supplements = st.multiselect(
+                    "Current Supplements",
+                    ["vitamin_d", "vitamin_b12", "omega_3", "magnesium", "probiotics",
+                     "ashwagandha", "turmeric", "multivitamin"],
+                    default=["vitamin_d"]
+                )
+
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("← Back"):
+                    st.session_state.wizard_step -= 1
+                    st.rerun()
+            with col2:
+                if st.button("Complete Assessment ✅", use_container_width=True, type="primary"):
+                    st.session_state.wizard_data.update({
+                        'intermittent_fasting': intermittent_fasting,
+                        'fasting_window': fasting_window,
+                        'exercise_prefs': exercise_prefs,
+                        'spiritual_practices': spiritual_practices,
+                        'supplements': supplements
+                    })
+
+                    # Build complete profile from wizard data
+                    wizard_data = st.session_state.wizard_data
+
+                    profile_payload = {
+                        "profile": {
+                            "user_id": user_id,
+                            "birth_details": {
+                                "date": wizard_data['birth_date'],
+                                "time": wizard_data['birth_time'],
+                                "place": wizard_data['birth_place'],
+                                "latitude": wizard_data['latitude'],
+                                "longitude": wizard_data['longitude'],
+                                "timezone": "UTC"
+                            },
+                            "personality": {
+                                "big_five": {
+                                    "openness": 0.7,
+                                    "conscientiousness": 0.8,
+                                    "extraversion": 0.6,
+                                    "agreeableness": 0.7,
+                                    "neuroticism": 0.4
+                                },
+                                "chronotype": wizard_data['chronotype'],
+                                "dosha_type": wizard_data['dosha_type'],
+                                "dosha_percentages": {
+                                    "vata": wizard_data['vata_pct'],
+                                    "pitta": wizard_data['pitta_pct'],
+                                    "kapha": wizard_data['kapha_pct']
+                                }
+                            },
+                            "physical": {
+                                "age": wizard_data['age'],
+                                "gender": wizard_data['gender'],
+                                "height_cm": wizard_data['height_cm'],
+                                "weight_kg": wizard_data['weight_kg'],
+                                "activity_level": wizard_data['activity_level']
+                            },
+                            "health": {
+                                "conditions": wizard_data.get('conditions', []),
+                                "allergies": wizard_data.get('allergies', []),
+                                "medications": [],
+                                "nutrient_deficiencies": wizard_data.get('deficiencies', []),
+                                "digestive_issues": [],
+                                "family_history": []
+                            },
+                            "dietary_preferences": {
+                                "diet_type": wizard_data['diet_type'],
+                                "cuisine_preferences": wizard_data['cuisines'],
+                                "disliked_foods": wizard_data['disliked_foods'],
+                                "favorite_foods": [],
+                                "budget_per_week": wizard_data['budget_per_week'],
+                                "budget_currency": wizard_data['budget_currency'],
+                                "cooking_skill": wizard_data['cooking_skill'],
+                                "cooking_time_available": wizard_data['cooking_time'],
+                                "meal_prep_preference": "daily",
+                                "eating_out_frequency": 2
+                            },
+                            "lifestyle": {
+                                "region": wizard_data['region'],
+                                "country_code": wizard_data['country_code'],
+                                "timezone": "UTC",
+                                "occupation": wizard_data['occupation'],
+                                "work_schedule_type": wizard_data['work_schedule'],
+                                "typical_work_hours": wizard_data['work_hours'],
+                                "work_break_preferences": ["lunch"],
+                                "commute_time_minutes": 0,
+                                "household_size": 1,
+                                "has_family_meals": False
+                            },
+                            "sleep_preferences": {
+                                "ideal_sleep_duration": wizard_data['ideal_sleep'],
+                                "preferred_bedtime": wizard_data['bedtime'],
+                                "preferred_wake_time": wizard_data['wake_time'],
+                                "current_sleep_quality": wizard_data['sleep_quality'],
+                                "sleep_issues": []
+                            },
+                            "goals": {
+                                "primary_goal": wizard_data['primary_goal'],
+                                "secondary_goals": [],
+                                "timeline": wizard_data['timeline'],
+                                "urgency": wizard_data['urgency'],
+                                "target_weight_kg": None,
+                                "meditation_minutes_daily": wizard_data['meditation_min'],
+                                "exercise_minutes_daily": wizard_data['exercise_min'],
+                                "priority_nutrition": wizard_data['priority_nutrition'],
+                                "priority_exercise": wizard_data['priority_exercise'],
+                                "priority_sleep": wizard_data['priority_sleep'],
+                                "priority_stress": wizard_data['priority_stress'],
+                                "priority_spiritual": wizard_data['priority_spiritual'],
+                                "priority_budget": wizard_data['priority_budget']
+                            },
+                            "custom_preferences": {
+                                "intermittent_fasting": wizard_data['intermittent_fasting'],
+                                "fasting_window": wizard_data.get('fasting_window'),
+                                "caffeine_preference": "moderate",
+                                "alcohol_consumption": "occasional",
+                                "supplement_stack": wizard_data['supplements'],
+                                "exercise_preferences": wizard_data['exercise_prefs'],
+                                "spiritual_practices": wizard_data['spiritual_practices'],
+                                "notes": ""
+                            }
+                        }
+                    }
+
+                    # Submit profile to backend
+                    with st.spinner("Creating your personalized wellness profile..."):
+                        response = make_api_request("POST", "/life-optimization/profile", json=profile_payload)
+
+                        if response and response.get('success'):
+                            st.success("✅ Profile created successfully!")
+                            st.balloons()
+
+                            # Clear wizard state
+                            st.session_state.wizard_step = 0
+                            st.session_state.wizard_data = {}
+                            st.session_state.editing_profile = False
+
+                            st.info("🎉 Your profile is ready! Go to **📅 My Plan** to see your personalized meal plan and schedule.")
+
+                            time.sleep(2)
+                            st.rerun()
+                        else:
+                            st.error("Failed to create profile. Please try again.")
+
+# ============================================================================
+# PAGE: My Plan - Dashboard
+# ============================================================================
+elif page == "📅 My Plan":
+    st.markdown("<h1 class='main-header'>📅 My Wellness Plan</h1>", unsafe_allow_html=True)
+
+    user_id = st.session_state.user_id
+
+    # Check if profile exists
+    profile_response = make_api_request("GET", f"/life-optimization/profile/{user_id}")
+
+    if not profile_response:
+        st.warning("⚠️ Please complete your assessment in **🌟 Life Optimization** first")
+        st.stop()
+
+    # Tabs for different views
+    tab1, tab2, tab3 = st.tabs(["🍽️ Today's Meals", "📅 Today's Schedule", "📊 Wellness Score"])
+
+    with tab1:
+        st.subheader("🍽️ Today's Meal Plan")
+
+        # Get or generate meal plan
+        meal_plan_response = make_api_request("GET", f"/life-optimization/meal-plan/{user_id}/current")
+
+        if meal_plan_response and meal_plan_response.get('success'):
+            meal_plan = meal_plan_response['meal_plan']
+
+            # Summary metrics
+            col1, col2, col3, col4 = st.columns(4)
+
+            with col1:
+                st.metric("Total Calories", f"{int(meal_plan['total_calories'])}")
+            with col2:
+                st.metric("Protein", f"{int(meal_plan['total_protein'])}g")
+            with col3:
+                st.metric("Cost", f"${meal_plan['total_cost']:.2f}")
+            with col4:
+                dosha_score = meal_plan.get('dosha_balance_score', 70)
+                st.metric("Dosha Balance", f"{int(dosha_score)}/100")
+
+            # Compliance indicators
+            col1, col2 = st.columns(2)
+            with col1:
+                if meal_plan.get('meets_goals'):
+                    st.success("✅ Meets nutritional goals")
+                else:
+                    st.warning("⚠️ Adjust for nutritional compliance")
+
+            with col2:
+                if meal_plan.get('meets_budget'):
+                    st.success("✅ Within budget")
+                else:
+                    st.warning("⚠️ Over budget")
+
+            st.markdown("---")
+
+            # Regenerate button
+            if st.button("🔄 Regenerate Meal Plan", use_container_width=True):
+                with st.spinner("Generating new meal plan..."):
+                    regen_response = make_api_request(
+                        "POST",
+                        f"/life-optimization/meal-plan/{user_id}/regenerate",
+                        json={"target_date": date.today().isoformat()}
+                    )
+                    if regen_response and regen_response.get('success'):
+                        st.success("✅ New meal plan generated!")
+                        time.sleep(1)
+                        st.rerun()
+
+            st.markdown("### Meals")
+
+            # Display each meal
+            for i, meal in enumerate(meal_plan['meals']):
+                with st.expander(f"{meal['time']} - {meal['meal_type'].upper()}: {meal['name']}", expanded=(i==0)):
+                    col1, col2 = st.columns([2, 1])
+
+                    with col1:
+                        st.markdown(f"**{meal['description']}**")
+                        st.markdown(f"*Cooking time: {meal['prep_time_minutes']} minutes*")
+
+                        # Ingredients
+                        st.markdown("**Ingredients:**")
+                        for ing in meal['ingredients']:
+                            reason = ing.get('reason', '')
+                            st.markdown(f"- **{ing['name']}**: {ing['quantity']} {ing['unit']} ({reason})")
+
+                        # Cooking instructions
+                        if meal.get('cooking_instructions'):
+                            st.markdown("**Instructions:**")
+                            for idx, instruction in enumerate(meal['cooking_instructions'], 1):
+                                st.markdown(f"{idx}. {instruction}")
+
+                        # Timing reason
+                        if meal.get('timing_reason'):
+                            st.info(f"**Why this timing?** {meal['timing_reason']}")
+
+                    with col2:
+                        st.metric("Calories", f"{int(meal['total_nutrients']['calories'])}")
+                        st.metric("Protein", f"{int(meal['total_nutrients']['protein_g'])}g")
+                        st.metric("Carbs", f"{int(meal['total_nutrients']['carbs_g'])}g")
+                        st.metric("Fat", f"{int(meal['total_nutrients']['fat_g'])}g")
+                        st.metric("Cost", f"${meal['cost_total']:.2f}")
+
+        else:
+            st.info("Generating your first meal plan...")
+            if st.button("Generate Meal Plan"):
+                with st.spinner("Creating personalized meal plan..."):
+                    gen_response = make_api_request(
+                        "POST",
+                        "/life-optimization/meal-plan/generate",
+                        json={
+                            "user_id": user_id,
+                            "start_date": date.today().isoformat(),
+                            "num_days": 1
+                        }
+                    )
+                    if gen_response and gen_response.get('success'):
+                        st.success("✅ Meal plan created!")
+                        time.sleep(1)
+                        st.rerun()
+
+    with tab2:
+        st.subheader("📅 Today's Schedule")
+
+        # Get or generate schedule
+        schedule_response = make_api_request("GET", f"/life-optimization/schedule/{user_id}/today")
+
+        if schedule_response and schedule_response.get('success'):
+            schedule = schedule_response['schedule']
+
+            # Summary metrics
+            col1, col2, col3, col4 = st.columns(4)
+
+            with col1:
+                st.metric("Sleep", f"{schedule['sleep_hours']}h")
+            with col2:
+                st.metric("Work", f"{schedule['work_hours']}h")
+            with col3:
+                st.metric("Exercise", f"{schedule['exercise_minutes']} min")
+            with col4:
+                st.metric("Free Time", f"{schedule['free_time_minutes']} min")
+
+            st.markdown("---")
+
+            # Energy forecast
+            st.markdown("### Energy Forecast")
+            forecast = schedule.get('energy_forecast', {})
+
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Morning", forecast.get('morning', 'moderate').title())
+            with col2:
+                st.metric("Afternoon", forecast.get('afternoon', 'moderate').title())
+            with col3:
+                st.metric("Evening", forecast.get('evening', 'moderate').title())
+
+            st.markdown("---")
+
+            # Timeline
+            st.markdown("### Daily Timeline")
+
+            # Group activities by time
+            for activity in schedule['activities']:
+                time_str = activity['time']
+                title = activity['title']
+                duration = activity['duration_minutes']
+                reason = activity.get('reason', '')
+
+                # Color code by activity type
+                activity_type = activity.get('activity_type', '')
+                if activity_type == 'sleep':
+                    color = '#9370DB'
+                elif activity_type in ['meditation', 'spiritual_practice']:
+                    color = '#FFD700'
+                elif activity_type == 'exercise':
+                    color = '#FF6347'
+                elif activity_type == 'work':
+                    color = '#4682B4'
+                elif activity_type == 'meal':
+                    color = '#32CD32'
+                else:
+                    color = '#D3D3D3'
+
+                st.markdown(f"""
+                <div style="background-color: {color}; padding: 10px; border-radius: 5px; margin: 5px 0; color: white;">
+                    <strong>{time_str}</strong> - {title} ({duration} min)<br>
+                    <em style="font-size: 0.9em;">{reason}</em>
+                </div>
+                """, unsafe_allow_html=True)
+
+        else:
+            st.info("Generating your optimized schedule...")
+            if st.button("Generate Schedule"):
+                with st.spinner("Creating personalized schedule..."):
+                    gen_response = make_api_request(
+                        "POST",
+                        "/life-optimization/schedule/generate",
+                        json={
+                            "user_id": user_id,
+                            "target_date": date.today().isoformat(),
+                            "include_planetary_hours": False
+                        }
+                    )
+                    if gen_response and gen_response.get('success'):
+                        st.success("✅ Schedule created!")
+                        time.sleep(1)
+                        st.rerun()
+
+    with tab3:
+        st.subheader("📊 Holistic Wellness Score")
+
+        st.info("Wellness scoring integrates data from wearables, EEG, voice, and more. Connect your devices in Settings to unlock this feature.")
+
+        # Placeholder for wellness scores
+        st.markdown("### Component Scores")
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.metric("Physical", "75/100")
+            st.metric("Mental", "72/100")
+
+        with col2:
+            st.metric("Emotional", "78/100")
+            st.metric("Spiritual", "68/100")
+
+        with col3:
+            st.metric("Nutritional", "80/100")
+            st.metric("Overall", "74/100")
+
+        st.markdown("---")
+
+        st.markdown("### Recent Insights")
+        st.info("💡 Sleep quality (55/100) is below optimal - consider earlier bedtime")
+        st.info("💡 Dosha balance improving - continue current meal plan")
+        st.success("✅ Exercise consistency excellent - keep it up!")
 
 # ============================================================================
 # PAGE: EEG Analysis
