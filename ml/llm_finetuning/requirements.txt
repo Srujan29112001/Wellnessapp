@@ -1,0 +1,28 @@
+# LLM Fine-tuning Requirements
+# For QLoRA training of Llama-2-7B
+
+# Core dependencies
+torch>=2.1.0
+transformers>=4.36.0
+datasets>=2.16.0
+accelerate>=0.25.0
+peft>=0.7.0
+bitsandbytes>=0.41.0
+scipy>=1.11.0
+
+# Training utilities
+wandb>=0.16.0
+tensorboard>=2.15.0
+einops>=0.7.0
+
+# Optional but recommended
+flash-attn>=2.4.0  # For faster attention (requires CUDA 11.8+)
+xformers>=0.0.23  # Memory-efficient attention
+
+# Quantization
+auto-gptq>=0.5.0  # Alternative quantization method
+optimum>=1.16.0
+
+# For serving (optional)
+text-generation-inference>=1.3.0
+vllm>=0.2.7
