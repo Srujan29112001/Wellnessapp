@@ -106,6 +106,9 @@ async def upload_eeg_data(
         }
 
         # Store in PostgreSQL
+        # Extract band powers from results (they're returned as a dict)
+        band_powers = results.get('band_powers', {})
+
         eeg_analysis = EEGAnalysis(
             user_id=user_id,
             timestamp=datetime.now(),
@@ -114,12 +117,12 @@ async def upload_eeg_data(
             focus_level=classification['focus'],
             relaxation_level=classification['relaxation'],
             drowsiness_level=classification['drowsiness'],
-            delta_power=float(features['band_powers'][0].mean()),
-            theta_power=float(features['band_powers'][1].mean()),
-            alpha_power=float(features['band_powers'][2].mean()),
-            beta_power=float(features['band_powers'][3].mean()),
-            gamma_power=float(features['band_powers'][4].mean()) if features['band_powers'].shape[0] > 4 else 0.0,
-            dominant_band=classification.get('dominant_band', 'beta'),
+            delta_power=float(band_powers.get('delta', 0.0)),
+            theta_power=float(band_powers.get('theta', 0.0)),
+            alpha_power=float(band_powers.get('alpha', 0.0)),
+            beta_power=float(band_powers.get('beta', 0.0)),
+            gamma_power=float(band_powers.get('gamma', 0.0)),
+            dominant_band=results.get('dominant_band', 'beta'),
             duration_seconds=eeg_data.shape[1] / eeg_processor.sample_rate,
             channels_used=eeg_data.shape[0],
             sample_rate=eeg_processor.sample_rate
