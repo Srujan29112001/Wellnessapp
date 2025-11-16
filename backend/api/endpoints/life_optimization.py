@@ -5,8 +5,8 @@ FastAPI routes for personalized meal plans and daily schedules.
 """
 
 from fastapi import APIRouter, HTTPException, Depends, Body
-from typing import Optional, List
-from datetime import date, datetime
+from typing import Optional, List, Dict
+from datetime import date, datetime, timedelta
 from pydantic import BaseModel, Field
 
 from backend.models.life_optimization_models import (
@@ -24,6 +24,12 @@ from backend.services.meal_plan_optimizer import get_meal_optimizer
 from backend.services.schedule_optimizer import get_schedule_optimizer
 from backend.services.currency_location_service import get_currency_service
 from backend.services.natal_chart_service import get_natal_chart_service
+from backend.services.shopping_list_service import (
+    get_shopping_list_generator,
+    ShoppingList,
+    ShoppingListItem
+)
+from backend.services.pdf_export_service import get_pdf_service
 
 
 # Initialize router
@@ -621,3 +627,285 @@ async def get_user_stats(user_id: str):
             "dosha_type": profile.personality.dosha_type
         }
     }
+
+
+# ============================================================================
+# SHOPPING LIST ENDPOINTS
+# ============================================================================
+
+class ShoppingListRequest(BaseModel):
+    """Request to generate shopping list"""
+    user_id: str
+    start_date: date
+    end_date: date
+
+
+class ShoppingListResponse(BaseModel):
+    """Shopping list response"""
+    success: bool
+    shopping_list: ShoppingList
+    message: str
+
+
+# In-memory storage for shopping lists
+shopping_lists: Dict[str, ShoppingList] = {}
+
+
+@router.post("/shopping-list/generate", response_model=ShoppingListResponse)
+async def generate_shopping_list(request: ShoppingListRequest):
+    """
+    Generate shopping list from meal plans.
+
+    Aggregates ingredients from all meal plans between start_date and end_date,
+    groups by category, calculates total quantities, and estimates costs.
+    """
+    if request.user_id not in user_profiles:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    try:
+        # Get all meal plans in date range
+        meal_plan_list = []
+        current_date = request.start_date
+
+        while current_date <= request.end_date:
+            key = f"{request.user_id}_{current_date}"
+            if key in meal_plans:
+                meal_plan_list.append(meal_plans[key])
+            current_date += timedelta(days=1)
+
+        if not meal_plan_list:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No meal plans found between {request.start_date} and {request.end_date}"
+            )
+
+        # Generate shopping list
+        currency_service = get_currency_service()
+        location = currency_service.detect_location_from_ip()
+
+        shopping_gen = get_shopping_list_generator()
+        shopping_list = shopping_gen.generate_shopping_list(
+            meal_plans=meal_plan_list,
+            user_id=request.user_id,
+            location=location
+        )
+
+        # Store shopping list
+        list_key = f"{request.user_id}_{request.start_date}_{request.end_date}"
+        shopping_lists[list_key] = shopping_list
+
+        return ShoppingListResponse(
+            success=True,
+            shopping_list=shopping_list,
+            message=f"Shopping list generated for {len(meal_plan_list)} days"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating shopping list: {str(e)}")
+
+
+@router.get("/shopping-list/{user_id}/current", response_model=ShoppingListResponse)
+async def get_current_shopping_list(user_id: str):
+    """Get shopping list for current week"""
+    if user_id not in user_profiles:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    today = date.today()
+    start_of_week = today - timedelta(days=today.weekday())
+    end_of_week = start_of_week + timedelta(days=6)
+
+    list_key = f"{user_id}_{start_of_week}_{end_of_week}"
+
+    if list_key not in shopping_lists:
+        # Auto-generate if not exists
+        try:
+            request = ShoppingListRequest(
+                user_id=user_id,
+                start_date=start_of_week,
+                end_date=end_of_week
+            )
+            return await generate_shopping_list(request)
+        except Exception as e:
+            raise HTTPException(status_code=404, detail=f"No shopping list found and could not generate: {str(e)}")
+
+    return ShoppingListResponse(
+        success=True,
+        shopping_list=shopping_lists[list_key],
+        message=f"Current week shopping list ({start_of_week} to {end_of_week})"
+    )
+
+
+@router.get("/shopping-list/{user_id}/date-range")
+async def get_shopping_list_by_range(
+    user_id: str,
+    start_date: date,
+    end_date: date
+):
+    """Get shopping list for specific date range"""
+    if user_id not in user_profiles:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    list_key = f"{user_id}_{start_date}_{end_date}"
+
+    if list_key not in shopping_lists:
+        raise HTTPException(status_code=404, detail=f"No shopping list found for date range")
+
+    return ShoppingListResponse(
+        success=True,
+        shopping_list=shopping_lists[list_key],
+        message=f"Shopping list for {start_date} to {end_date}"
+    )
+
+
+# ============================================================================
+# PDF EXPORT ENDPOINTS
+# ============================================================================
+
+from fastapi.responses import StreamingResponse
+
+
+@router.get("/pdf/meal-plan/{user_id}/date/{target_date}")
+async def export_meal_plan_pdf(user_id: str, target_date: date):
+    """Export meal plan as PDF"""
+    if user_id not in user_profiles:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    key = f"{user_id}_{target_date}"
+
+    if key not in meal_plans:
+        raise HTTPException(status_code=404, detail=f"No meal plan found for {target_date}")
+
+    try:
+        pdf_service = get_pdf_service()
+        profile = user_profiles.get(user_id)
+
+        pdf_buffer = pdf_service.generate_meal_plan_pdf(
+            meal_plan=meal_plans[key],
+            profile=profile
+        )
+
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename=meal_plan_{target_date}.pdf"
+            }
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
+
+
+@router.get("/pdf/shopping-list/{user_id}/current")
+async def export_shopping_list_pdf(user_id: str):
+    """Export current week shopping list as PDF"""
+    if user_id not in user_profiles:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    # Get current week shopping list
+    today = date.today()
+    start_of_week = today - timedelta(days=today.weekday())
+    end_of_week = start_of_week + timedelta(days=6)
+
+    list_key = f"{user_id}_{start_of_week}_{end_of_week}"
+
+    if list_key not in shopping_lists:
+        raise HTTPException(status_code=404, detail="No shopping list found")
+
+    try:
+        pdf_service = get_pdf_service()
+
+        pdf_buffer = pdf_service.generate_shopping_list_pdf(
+            shopping_list=shopping_lists[list_key]
+        )
+
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename=shopping_list_{start_of_week}_to_{end_of_week}.pdf"
+            }
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
+
+
+@router.get("/pdf/schedule/{user_id}/date/{target_date}")
+async def export_schedule_pdf(user_id: str, target_date: date):
+    """Export daily schedule as PDF"""
+    if user_id not in user_profiles:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    key = f"{user_id}_{target_date}"
+
+    if key not in schedules:
+        raise HTTPException(status_code=404, detail=f"No schedule found for {target_date}")
+
+    try:
+        pdf_service = get_pdf_service()
+
+        pdf_buffer = pdf_service.generate_schedule_pdf(
+            schedule=schedules[key]
+        )
+
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename=schedule_{target_date}.pdf"
+            }
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
+
+
+@router.get("/pdf/wellness-report/{user_id}")
+async def export_wellness_report_pdf(user_id: str):
+    """Export comprehensive wellness report as PDF"""
+    if user_id not in user_profiles:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    try:
+        profile = user_profiles[user_id]
+
+        # Mock wellness scores (in production, fetch from database)
+        wellness_scores = {
+            'physical': 75,
+            'mental': 72,
+            'emotional': 78,
+            'spiritual': 68,
+            'nutritional': 80,
+            'overall': 74
+        }
+
+        recent_data = {
+            'Sleep Average (7 days)': '7.2 hours',
+            'Exercise Frequency': '5 days/week',
+            'Meditation': '20 min/day',
+            'Stress Level': 'Moderate',
+            'Meal Plan Adherence': '85%'
+        }
+
+        pdf_service = get_pdf_service()
+
+        pdf_buffer = pdf_service.generate_wellness_report_pdf(
+            user_id=user_id,
+            profile=profile,
+            wellness_scores=wellness_scores,
+            recent_data=recent_data
+        )
+
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename=wellness_report_{user_id}_{date.today()}.pdf"
+            }
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
