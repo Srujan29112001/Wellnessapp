@@ -1,11 +1,16 @@
 """
 Personalized Recommendations Endpoints
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel
 from enum import Enum
+import uuid
+
+from backend.database.postgres import get_db
+from backend.services.recommendation_engine import get_recommendation_engine
 
 router = APIRouter()
 
@@ -48,6 +53,7 @@ class RecommendationRequest(BaseModel):
 @router.post("/", response_model=List[Recommendation])
 async def get_recommendations(
     request: RecommendationRequest,
+    db: AsyncSession = Depends(get_db),
     user_id: str = "demo_user"
 ):
     """
@@ -60,66 +66,38 @@ async def get_recommendations(
     - Ayurvedic dosha type
     - Medical conditions and contraindications
     """
-    # TODO: Implement recommendation engine
-    # 1. Gather user context
-    # 2. Analyze trends and correlations
-    # 3. Query knowledge base
-    # 4. Generate ranked recommendations
-    # 5. Filter based on contraindications
+    # Get recommendation engine
+    engine = get_recommendation_engine()
 
-    sample_recommendations = [
-        Recommendation(
-            id="rec_1",
-            user_id=user_id,
-            category=RecommendationCategory.SUPPLEMENT,
-            title="Consider Ashwagandha for stress management",
-            description="Ashwagandha is an adaptogenic herb shown to reduce cortisol levels and anxiety",
-            reasoning="Based on your elevated stress levels (EEG analysis) and reported anxiety symptoms",
-            evidence=[
-                "Study: Ashwagandha reduces cortisol by 28% (PubMed: 23439798)",
-                "Ayurvedic: Balances Vata dosha related to anxiety"
-            ],
-            priority=Priority.HIGH,
-            created_at=datetime.now()
-        ),
-        Recommendation(
-            id="rec_2",
-            user_id=user_id,
-            category=RecommendationCategory.DIET,
-            title="Increase magnesium-rich foods",
-            description="Add more nuts, seeds, and leafy greens to your diet",
-            reasoning="Your sleep quality is suboptimal (avg 5.5hrs) and stress is high. Magnesium supports relaxation and sleep.",
-            evidence=[
-                "Study: Magnesium improves sleep quality (PubMed: 23853635)",
-                "Your diet log shows low magnesium intake"
-            ],
-            priority=Priority.HIGH,
-            created_at=datetime.now()
-        ),
-        Recommendation(
-            id="rec_3",
-            user_id=user_id,
-            category=RecommendationCategory.LIFESTYLE,
-            title="Practice box breathing daily",
-            description="10 minutes of box breathing (4-4-4-4 pattern) in the afternoon",
-            reasoning="Your EEG shows stress peaks in afternoon. Breathing exercises increase alpha waves and reduce beta activity.",
-            evidence=[
-                "Research: Controlled breathing reduces stress biomarkers",
-                "Pattern observed: Your stress increases 2-4 PM daily"
-            ],
-            priority=Priority.MEDIUM,
-            created_at=datetime.now()
+    # Generate recommendations using our intelligent engine
+    raw_recommendations = await engine.generate_recommendations(db, user_id)
+
+    # Convert to API response format
+    recommendations = []
+    for rec in raw_recommendations:
+        recommendations.append(
+            Recommendation(
+                id=str(uuid.uuid4()),
+                user_id=user_id,
+                category=RecommendationCategory(rec['category']),
+                title=rec['title'],
+                description=rec['description'],
+                reasoning=rec['reasoning'],
+                evidence=rec.get('evidence', []),
+                priority=rec['priority'],
+                created_at=datetime.now(),
+                completed=False
+            )
         )
-    ]
 
     # Filter by category if specified
     if request.category:
-        sample_recommendations = [
-            r for r in sample_recommendations
+        recommendations = [
+            r for r in recommendations
             if r.category == request.category
         ]
 
-    return sample_recommendations
+    return recommendations
 
 
 @router.get("/history", response_model=List[Recommendation])
