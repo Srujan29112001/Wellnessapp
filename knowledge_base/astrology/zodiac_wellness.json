@@ -1,0 +1,386 @@
+{
+  "zodiac_signs": [
+    {
+      "sign": "Aries",
+      "element": "Fire",
+      "ruling_planet": "Mars",
+      "dates": "March 21 - April 19",
+      "dosha_affinity": "Pitta",
+      "dosha_reasoning": "Fire element, action-oriented, intense energy aligns with Pitta's qualities",
+      "health_strengths": [
+        "High energy and vitality",
+        "Strong immune system",
+        "Quick recovery from illness",
+        "Natural athleticism"
+      ],
+      "health_vulnerabilities": [
+        "Headaches and migraines",
+        "Inflammation and fevers",
+        "Stress from overexertion",
+        "Accident-prone due to impulsiveness"
+      ],
+      "wellness_recommendations": [
+        "Channel intense energy through regular vigorous exercise",
+        "Practice cooling activities like swimming to balance fire element",
+        "Manage impulsiveness with meditation and mindfulness",
+        "Avoid excessive spicy foods that aggravate Pitta",
+        "Get adequate rest despite tendency to push limits"
+      ],
+      "beneficial_foods": [
+        "Cooling fruits (melons, cucumbers)",
+        "Leafy greens",
+        "Coconut water",
+        "Whole grains (barley, rice)"
+      ],
+      "supplements_to_consider": [
+        "Magnesium for muscle tension and stress",
+        "Ashwagandha to calm intensity",
+        "Omega-3 for anti-inflammatory support",
+        "B-complex for sustained energy without burnout"
+      ],
+      "exercise_recommendations": [
+        "High-intensity interval training",
+        "Martial arts or boxing",
+        "Competitive sports",
+        "Balance with cooling yoga or tai chi"
+      ],
+      "stress_triggers": [
+        "Feeling restricted or controlled",
+        "Lack of physical activity",
+        "Boredom and routine",
+        "Competition and challenges"
+      ],
+      "ideal_sleep_routine": "Active during day, needs 7-8 hours, benefits from winding down with gentle stretching",
+      "planetary_periods": {
+        "mars_transits": "Increased energy but risk of accidents and inflammation - extra caution needed",
+        "mercury_retrograde": "Communication mishaps may cause frustration - practice patience"
+      }
+    },
+    {
+      "sign": "Taurus",
+      "element": "Earth",
+      "ruling_planet": "Venus",
+      "dates": "April 20 - May 20",
+      "dosha_affinity": "Kapha",
+      "dosha_reasoning": "Earth element, grounded nature, tendency toward stability and comfort aligns with Kapha",
+      "health_strengths": [
+        "Strong constitution and stamina",
+        "Robust immune system",
+        "Good physical endurance",
+        "Natural resilience"
+      ],
+      "health_vulnerabilities": [
+        "Weight gain and sluggish metabolism",
+        "Thyroid issues",
+        "Sore throat and neck problems",
+        "Tendency toward indulgence"
+      ],
+      "wellness_recommendations": [
+        "Maintain active lifestyle despite preference for comfort",
+        "Practice moderation with food and indulgences",
+        "Stimulate metabolism with morning exercise",
+        "Enjoy nature and gardening for grounding",
+        "Regular thyroid checkups"
+      ],
+      "beneficial_foods": [
+        "Light, warm foods",
+        "Spices (ginger, black pepper) to stimulate digestion",
+        "Leafy greens and bitter vegetables",
+        "Fruits (apples, pears, berries)"
+      ],
+      "supplements_to_consider": [
+        "Iodine or kelp for thyroid support",
+        "Green tea extract for metabolism",
+        "Digestive enzymes",
+        "Vitamin D for mood and energy"
+      ],
+      "exercise_recommendations": [
+        "Hiking in nature",
+        "Dance or rhythmic movement",
+        "Yoga (more vigorous styles)",
+        "Gardening and outdoor work"
+      ],
+      "stress_triggers": [
+        "Sudden changes",
+        "Financial insecurity",
+        "Rushed decisions",
+        "Disruption to routine"
+      ],
+      "ideal_sleep_routine": "Enjoys sleep, may oversleep - 7-8 hours sufficient, morning routine essential",
+      "planetary_periods": {
+        "venus_transits": "Enhanced appreciation for comfort - watch overindulgence",
+        "uranus_aspects": "Unexpected changes cause stress - embrace flexibility"
+      }
+    },
+    {
+      "sign": "Gemini",
+      "element": "Air",
+      "ruling_planet": "Mercury",
+      "dates": "May 21 - June 20",
+      "dosha_affinity": "Vata",
+      "dosha_reasoning": "Air element, mental activity, changeable nature perfectly aligns with Vata characteristics",
+      "health_strengths": [
+        "Mental agility and quick thinking",
+        "Adaptability to change",
+        "Youthful energy",
+        "Good hand-eye coordination"
+      ],
+      "health_vulnerabilities": [
+        "Anxiety and nervous tension",
+        "Insomnia and restless mind",
+        "Respiratory issues",
+        "Scattered energy and burnout"
+      ],
+      "wellness_recommendations": [
+        "Establish grounding routines despite resistance",
+        "Practice deep breathing for nervous system regulation",
+        "Limit caffeine and stimulants",
+        "One-pointed focus practices (meditation, journaling)",
+        "Warm, nourishing foods to ground scattered energy"
+      ],
+      "beneficial_foods": [
+        "Warm, cooked foods",
+        "Root vegetables for grounding",
+        "Soups and stews",
+        "Healthy fats (ghee, avocado, nuts)"
+      ],
+      "supplements_to_consider": [
+        "Magnesium glycinate for nervous system support",
+        "Ashwagandha to calm mental chatter",
+        "L-Theanine for focused calm",
+        "Omega-3 for brain health"
+      ],
+      "exercise_recommendations": [
+        "Variety of activities (gets bored easily)",
+        "Dance, Pilates",
+        "Cycling or running with music",
+        "Social sports and classes"
+      ],
+      "stress_triggers": [
+        "Monotony and repetition",
+        "Being confined or restricted",
+        "Information overload",
+        "Lack of mental stimulation"
+      ],
+      "ideal_sleep_routine": "Struggles with racing mind - needs wind-down routine, 7-9 hours essential",
+      "planetary_periods": {
+        "mercury_retrograde": "Extra prone to communication issues and anxiety - double grounding practices",
+        "saturn_transits": "Restriction feels heavy - focus on structure as support not limitation"
+      }
+    },
+    {
+      "sign": "Cancer",
+      "element": "Water",
+      "ruling_planet": "Moon",
+      "dates": "June 21 - July 22",
+      "dosha_affinity": "Kapha",
+      "dosha_reasoning": "Water element, nurturing nature, emotional depth aligns with Kapha's caring qualities",
+      "health_strengths": [
+        "Strong intuition about body's needs",
+        "Emotional depth and empathy",
+        "Natural healing abilities",
+        "Good memory"
+      ],
+      "health_vulnerabilities": [
+        "Digestive issues linked to emotions",
+        "Water retention and bloating",
+        "Tendency toward emotional eating",
+        "Breast and stomach sensitivities"
+      ],
+      "wellness_recommendations": [
+        "Honor emotional needs while maintaining boundaries",
+        "Process emotions through journaling or therapy",
+        "Avoid comfort eating - find alternative soothing practices",
+        "Moon phase awareness for energy management",
+        "Create nurturing home environment"
+      ],
+      "beneficial_foods": [
+        "Easily digestible foods",
+        "Warm liquids and soups",
+        "Probiotic-rich foods (yogurt, kefir)",
+        "Ginger tea for digestion"
+      ],
+      "supplements_to_consider": [
+        "Probiotics for gut-emotion axis",
+        "Vitamin D and B12 for mood",
+        "Digestive enzymes",
+        "Holy Basil (Tulsi) for emotional balance"
+      ],
+      "exercise_recommendations": [
+        "Water-based activities (swimming, aqua aerobics)",
+        "Gentle yoga",
+        "Walking, especially near water",
+        "Restorative and yin yoga"
+      ],
+      "stress_triggers": [
+        "Feeling unsafe or insecure",
+        "Criticism or rejection",
+        "Family issues",
+        "Emotional overwhelm from others"
+      ],
+      "ideal_sleep_routine": "Needs emotional security for sleep, 8-9 hours, fluctuates with moon phases",
+      "planetary_periods": {
+        "moon_phases": "Full moon - emotional intensity, new moon - introspection and rest needed",
+        "mercury_in_cancer": "Enhanced intuition but also worry - trust gut feelings"
+      }
+    },
+    {
+      "sign": "Leo",
+      "element": "Fire",
+      "ruling_planet": "Sun",
+      "dates": "July 23 - August 22",
+      "dosha_affinity": "Pitta",
+      "dosha_reasoning": "Fire element, leadership, strong will, and vitality align with Pitta's dynamic nature",
+      "health_strengths": [
+        "Robust heart and cardiovascular health",
+        "Natural vitality and life force",
+        "Strong recuperative powers",
+        "Radiant physical presence"
+      ],
+      "health_vulnerabilities": [
+        "Heart and cardiovascular stress from pressure",
+        "Back and spine issues",
+        "Burnout from overextension",
+        "Pride preventing asking for help"
+      ],
+      "wellness_recommendations": [
+        "Heart-healthy lifestyle (cardio exercise, healthy fats)",
+        "Balance spotlight time with rest and recharge",
+        "Practice humility and asking for support",
+        "Spinal health through yoga and posture awareness",
+        "Avoid letting ego interfere with health needs"
+      ],
+      "beneficial_foods": [
+        "Heart-healthy foods (salmon, walnuts, berries)",
+        "Cooling foods to balance fire",
+        "Colorful fruits and vegetables",
+        "Moderate portions (tendency to feast)"
+      ],
+      "supplements_to_consider": [
+        "CoQ10 for heart health",
+        "Omega-3 for cardiovascular support",
+        "Magnesium for heart rhythm",
+        "Hawthorn berry for heart vitality"
+      ],
+      "exercise_recommendations": [
+        "Cardiovascular exercise (running, cycling)",
+        "Performance-based activities",
+        "Group fitness classes (enjoys being seen)",
+        "Yoga for spinal health"
+      ],
+      "stress_triggers": [
+        "Being ignored or underappreciated",
+        "Loss of control or authority",
+        "Criticism of performance",
+        "Lack of recognition"
+      ],
+      "ideal_sleep_routine": "7-8 hours, benefits from luxurious sleep environment, needs to 'turn off' performance mode",
+      "planetary_periods": {
+        "sun_transits": "Peak vitality but risk of burnout - pace yourself",
+        "saturn_aspects": "Challenges to ego and authority - growth through humility"
+      }
+    },
+    {
+      "sign": "Virgo",
+      "element": "Earth",
+      "ruling_planet": "Mercury",
+      "dates": "August 23 - September 22",
+      "dosha_affinity": "Vata-Pitta",
+      "dosha_reasoning": "Combines Vata's analytical mind with Pitta's perfectionism and discernment",
+      "health_strengths": [
+        "Attention to health details",
+        "Disciplined with routines",
+        "Research-oriented about wellness",
+        "Good body awareness"
+      ],
+      "health_vulnerabilities": [
+        "Digestive issues from worry and stress",
+        "Anxiety and overthinking",
+        "Perfectionism causing tension",
+        "Hypochondria tendencies"
+      ],
+      "wellness_recommendations": [
+        "Balance health focus with enjoying life",
+        "Avoid analysis paralysis about health",
+        "Gut-brain connection awareness",
+        "Practice self-compassion over self-criticism",
+        "Simple, consistent routines over complex protocols"
+      ],
+      "beneficial_foods": [
+        "Easy-to-digest whole foods",
+        "Probiotic and prebiotic foods",
+        "Warm, cooked meals",
+        "Avoid cold, raw foods"
+      ],
+      "supplements_to_consider": [
+        "Probiotics for gut-brain axis",
+        "Magnesium glycinate for anxiety",
+        "Digestive enzymes",
+        "Adaptogenic herbs (Ashwagandha, Rhodiola)"
+      ],
+      "exercise_recommendations": [
+        "Structured workout routines",
+        "Functional fitness",
+        "Detailed programs (tracking appeals to analytical mind)",
+        "Mindful movement to reduce mental chatter"
+      ],
+      "stress_triggers": [
+        "Disorder and chaos",
+        "Imperfection in self or others",
+        "Lack of clarity or information",
+        "Feeling useless or incompetent"
+      ],
+      "ideal_sleep_routine": "Needs 7-9 hours, benefits from consistent schedule, may use sleep tracking",
+      "planetary_periods": {
+        "mercury_retrograde": "Heightened anxiety about details - practice letting go of control",
+        "jupiter_transits": "Expansion and faith counterbalances worry - embrace optimism"
+      }
+    }
+  ],
+  "dosha_zodiac_mapping": {
+    "Vata": ["Gemini", "Virgo", "Aquarius"],
+    "Pitta": ["Aries", "Leo", "Sagittarius"],
+    "Kapha": ["Taurus", "Cancer", "Scorpio", "Pisces"],
+    "Mixed": {
+      "Libra": "Vata-Pitta",
+      "Capricorn": "Vata-Kapha"
+    }
+  },
+  "planetary_wellness_influences": {
+    "Sun": {
+      "body_parts": ["Heart", "Spine", "Vitality"],
+      "supplements": ["Vitamin D3", "CoQ10"],
+      "recommendations": "Support cardiovascular health, spinal integrity, and life force energy"
+    },
+    "Moon": {
+      "body_parts": ["Stomach", "Breasts", "Emotions", "Fluids"],
+      "supplements": ["Probiotics", "Magnesium", "B-vitamins"],
+      "recommendations": "Support emotional balance, digestive health, and hormonal cycles"
+    },
+    "Mercury": {
+      "body_parts": ["Nervous system", "Lungs", "Communication"],
+      "supplements": ["Omega-3", "B-complex", "Ginkgo biloba"],
+      "recommendations": "Support cognitive function, respiratory health, and nervous system"
+    },
+    "Venus": {
+      "body_parts": ["Kidneys", "Throat", "Skin", "Reproductive system"],
+      "supplements": ["Vitamin E", "Zinc", "Collagen"],
+      "recommendations": "Support hormonal balance, skin health, and beauty from within"
+    },
+    "Mars": {
+      "body_parts": ["Muscles", "Blood", "Head", "Energy"],
+      "supplements": ["Iron", "B12", "Protein"],
+      "recommendations": "Support physical stamina, muscle health, and vitality"
+    },
+    "Jupiter": {
+      "body_parts": ["Liver", "Hips", "Growth", "Fat metabolism"],
+      "supplements": ["Milk thistle", "Turmeric", "Chromium"],
+      "recommendations": "Support liver function, healthy growth, and metabolic balance"
+    },
+    "Saturn": {
+      "body_parts": ["Bones", "Teeth", "Skin", "Joints"],
+      "supplements": ["Calcium", "Vitamin D", "Vitamin K2", "Collagen"],
+      "recommendations": "Support skeletal health, dental health, and structural integrity"
+    }
+  }
+}

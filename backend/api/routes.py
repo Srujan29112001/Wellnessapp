@@ -13,7 +13,8 @@ from backend.api.endpoints import (
     users,
     meals,
     supplements,
-    auth
+    auth,
+    life_optimization
 )
 
 # Create main API router
@@ -30,3 +31,4 @@ api_router.include_router(recommendations.router, prefix="/recommendations", tag
 api_router.include_router(users.router, prefix="/users", tags=["Users"])
 api_router.include_router(meals.router, prefix="/meals", tags=["Meals & Diet"])
 api_router.include_router(supplements.router, prefix="/supplements", tags=["Supplements"])
+api_router.include_router(life_optimization.router, tags=["Life Optimization"])
