@@ -11,7 +11,7 @@ import numpy as np
 from scipy import signal
 from scipy.fft import fft, fftfreq
 import pandas as pd
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Any
 import logging
 
 logger = logging.getLogger(__name__)
@@ -91,12 +91,10 @@ class EEGProcessor:
         Returns:
             Notch-filtered data
         """
-        nyquist = self.sample_rate / 2
-        freq = self.notch_freq / nyquist
         quality = 30.0  # Q factor
 
-        # Design notch filter
-        b, a = signal.iirnotch(freq, quality, self.sample_rate)
+        # Design notch filter (fs parameter specifies sampling frequency)
+        b, a = signal.iirnotch(self.notch_freq, quality, fs=self.sample_rate)
 
         # Apply filter
         filtered_data = np.zeros_like(data)
@@ -250,7 +248,7 @@ class EEGProcessor:
         logger.info("EEG preprocessing complete")
         return data
 
-    def analyze(self, raw_data: np.ndarray) -> Dict[str, any]:
+    def analyze(self, raw_data: np.ndarray) -> Dict[str, Any]:
         """
         Complete EEG analysis pipeline
 

@@ -14,9 +14,10 @@ from typing import List, Dict, Optional, Tuple
 from datetime import datetime
 from pathlib import Path
 
-from langchain.chat_models import ChatOpenAI, ChatAnthropic
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.vectorstores import Chroma
+from config.settings import settings
+from langchain_community.chat_models import ChatOpenAI, ChatAnthropic
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
@@ -32,14 +33,21 @@ class WellnessKnowledgeBase:
 
     def __init__(
         self,
-        knowledge_base_path: str = "/home/user/Wellnessapp/knowledge_base",
-        vector_store_path: str = "/home/user/Wellnessapp/data/vector_store",
-        neo4j_uri: str = "bolt://neo4j:7687",
-        neo4j_user: str = "neo4j",
-        neo4j_password: str = "wellness123"
+        knowledge_base_path: Optional[str] = None,
+        vector_store_path: Optional[str] = None,
+        neo4j_uri: Optional[str] = None,
+        neo4j_user: Optional[str] = None,
+        neo4j_password: Optional[str] = None
     ):
-        self.kb_path = Path(knowledge_base_path)
-        self.vector_store_path = Path(vector_store_path)
+        # Get project root
+        PROJECT_ROOT = Path(__file__).parent.parent.parent
+
+        # Use provided paths or fall back to settings/defaults
+        kb_path_str = knowledge_base_path or os.getenv("KNOWLEDGE_BASE_PATH", str(PROJECT_ROOT / "knowledge_base"))
+        vs_path_str = vector_store_path or os.getenv("VECTOR_STORE_PATH", str(PROJECT_ROOT / "data" / "vector_store"))
+
+        self.kb_path = Path(kb_path_str)
+        self.vector_store_path = Path(vs_path_str)
 
         # Initialize embeddings
         self.embeddings = HuggingFaceEmbeddings(
@@ -51,6 +59,11 @@ class WellnessKnowledgeBase:
         self.vector_store = self._init_vector_store()
 
         # Initialize Neo4j for GraphRAG
+        # Use provided params or fall back to environment variables
+        neo4j_uri = neo4j_uri or os.getenv("NEO4J_URI", "bolt://localhost:7687")
+        neo4j_user = neo4j_user or os.getenv("NEO4J_USER", "neo4j")
+        neo4j_password = neo4j_password or os.getenv("NEO4J_PASSWORD", "wellness123")
+
         try:
             self.neo4j_driver = GraphDatabase.driver(
                 neo4j_uri,
@@ -407,6 +420,31 @@ Include references to studies or traditional wisdom when applicable.""",
                 sources.append(f"Supplement database: {metadata.get('name', '')}")
 
         return sources[:5]  # Top 5
+
+    async def get_conversation_history(self, user_id: str, limit: int = 50) -> List[Dict]:
+        """
+        Get chat history for a user
+
+        Args:
+            user_id: User identifier
+            limit: Maximum number of messages to return
+
+        Returns:
+            List of chat messages with role, content, and timestamp
+        """
+        memory = self.get_or_create_memory(user_id)
+        messages = memory.chat_memory.messages
+
+        # Convert to dict format
+        history = []
+        for msg in messages[-limit:]:  # Get last N messages
+            history.append({
+                "role": "user" if msg.type == "human" else "assistant",
+                "content": msg.content,
+                "timestamp": datetime.now()  # Would be actual timestamp from DB
+            })
+
+        return history
 
 
 # Global instances (would be managed by dependency injection in production)
