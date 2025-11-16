@@ -2,7 +2,7 @@
 Food Recognition Endpoints
 """
 from fastapi import APIRouter, UploadFile, File
-from typing import List, Dict
+from typing import List, Dict, Optional
 from datetime import datetime
 from pydantic import BaseModel
 
@@ -32,53 +32,60 @@ class FoodRecognitionResponse(BaseModel):
 @router.post("/recognize", response_model=FoodRecognitionResponse)
 async def recognize_food(
     file: UploadFile = File(...),
-    user_id: str = "demo_user"
+    user_id: str = "demo_user",
+    portion_size: str = "medium"
 ):
     """
     Recognize food items from image using ViT-DINO model
 
     Accepts: JPG, PNG image files
     """
-    # TODO: Implement food recognition
-    # 1. Load and preprocess image
-    # 2. Run ViT-DINO model
-    # 3. Map to nutrition database
-    # 4. Generate recommendations
+    import tempfile
+    import os
+    from PIL import Image
+    from ml.food_recognition import FoodRecognitionModel
 
-    return FoodRecognitionResponse(
-        id="temp_id",
-        user_id=user_id,
-        timestamp=datetime.now(),
-        detected_foods=[
+    # Save uploaded file temporarily
+    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp:
+        content = await file.read()
+        tmp.write(content)
+        tmp_path = tmp.name
+
+    try:
+        # Load image
+        image = Image.open(tmp_path)
+
+        # Analyze meal
+        model = FoodRecognitionModel()
+        result = model.analyze_meal(image=image, portion_size=portion_size)
+
+        # Convert to response format
+        detected_foods = [
             FoodItem(
-                name="Mixed salad",
-                confidence=0.92,
-                calories=150,
-                protein_g=5.0,
-                carbs_g=20.0,
-                fat_g=7.0
-            ),
-            FoodItem(
-                name="Grilled chicken",
-                confidence=0.87,
-                calories=250,
-                protein_g=35.0,
-                carbs_g=0.0,
-                fat_g=10.0
+                name=food["name"],
+                confidence=food["confidence"],
+                calories=None,  # Individual calories not broken down
+                protein_g=None,
+                carbs_g=None,
+                fat_g=None
             )
-        ],
-        total_calories=400,
-        nutritional_summary={
-            "protein_g": 40.0,
-            "carbs_g": 20.0,
-            "fat_g": 17.0,
-            "fiber_g": 5.0
-        },
-        recommendations=[
-            "Great protein-rich meal!",
-            "Consider adding complex carbs for sustained energy."
+            for food in result["detected_foods"]
         ]
-    )
+
+        return FoodRecognitionResponse(
+            id=f"food_{datetime.now().timestamp()}",
+            user_id=user_id,
+            timestamp=datetime.now(),
+            detected_foods=detected_foods,
+            total_calories=result["total_calories"],
+            nutritional_summary=result["nutritional_summary"],
+            recommendations=result["recommendations"]
+        )
+
+    finally:
+        # Clean up temp file
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
 
 
 @router.post("/ocr-supplement", response_model=dict)
@@ -91,21 +98,33 @@ async def ocr_supplement_label(
 
     Accepts: JPG, PNG images of supplement bottles/labels
     """
-    # TODO: Implement OCR pipeline
-    # 1. Run OCR (Tesseract or EasyOCR)
-    # 2. Parse supplement name, ingredients, dosage
-    # 3. Match against supplement database
-    # 4. Check for interactions/contraindications
+    import tempfile
+    import os
+    from PIL import Image
+    from ml.ocr import SupplementOCR
 
-    return {
-        "id": "temp_id",
-        "user_id": user_id,
-        "timestamp": datetime.now(),
-        "supplement_name": "Ashwagandha Extract",
-        "dosage": "500mg",
-        "ingredients": ["Ashwagandha root extract", "Cellulose capsule"],
-        "active_compounds": {"Withanolides": "5%"},
-        "benefits": ["Stress reduction", "Anxiety relief", "Sleep support"],
-        "warnings": ["Consult doctor if pregnant or nursing"],
-        "contraindications": []
-    }
+    # Save uploaded file temporarily
+    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp:
+        content = await file.read()
+        tmp.write(content)
+        tmp_path = tmp.name
+
+    try:
+        # Load image
+        image = Image.open(tmp_path)
+
+        # Scan supplement label
+        scanner = SupplementOCR()
+        result = scanner.scan_supplement_label(image=image)
+
+        # Add metadata
+        result["id"] = f"supp_{datetime.now().timestamp()}"
+        result["user_id"] = user_id
+        result["timestamp"] = datetime.now()
+
+        return result
+
+    finally:
+        # Clean up temp file
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
