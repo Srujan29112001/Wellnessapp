@@ -1,14 +1,10 @@
 """
 AI Wellness Coach Endpoints
 """
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from backend.database.postgres import get_db
-from backend.services.coach_service import wellness_coach
 
 router = APIRouter()
 
@@ -48,8 +44,7 @@ class GuidedSessionResponse(BaseModel):
 @router.post("/chat", response_model=ChatResponse)
 async def chat_with_coach(
     request: ChatRequest,
-    user_id: str = "demo_user",
-    db: AsyncSession = Depends(get_db)
+    user_id: str = "demo_user"
 ):
     """
     Chat with AI wellness coach
@@ -60,18 +55,28 @@ async def chat_with_coach(
     - Recent EEG/voice/diet data
     - Long-term memory of past conversations
     """
-    # Use the wellness coach service
-    response = await wellness_coach.chat(
-        user_id=user_id,
-        message=request.message,
-        db_session=db if request.include_context else None
-    )
+    # TODO: Implement LangChain-based coach
+    # 1. Retrieve user context (health data, preferences)
+    # 2. Search knowledge base (GraphRAG)
+    # 3. Generate response with LLM
+    # 4. Store conversation in memory
 
     return ChatResponse(
-        message=response["content"],
-        context_used=response.get("context_used", []),
-        recommendations=None,  # Could extract these from response
-        sources=response.get("sources", [])
+        message="I understand you're feeling anxious and low on energy. Based on your recent EEG data showing elevated stress levels and your sleep log indicating only 5 hours last night, I recommend: 1) Prioritize 7-8 hours of sleep tonight, 2) Try a 10-minute breathing exercise (I can guide you), 3) Consider magnesium-rich foods like nuts and leafy greens. Would you like me to create a personalized plan?",
+        context_used=[
+            "Recent EEG analysis (high stress)",
+            "Sleep log (5 hours)",
+            "User preference: natural remedies"
+        ],
+        recommendations=[
+            "Improve sleep hygiene",
+            "Magnesium supplementation",
+            "Breathing exercises"
+        ],
+        sources=[
+            "Study: Magnesium and sleep quality (PubMed)",
+            "Ayurvedic principle: Vata imbalance and anxiety"
+        ]
     )
 
 
@@ -83,16 +88,8 @@ async def get_chat_history(
     """
     Get chat history with wellness coach
     """
-    history = await wellness_coach.get_conversation_history(user_id, limit)
-
-    return [
-        ChatMessage(
-            role=msg["role"],
-            content=msg["content"],
-            timestamp=msg.get("timestamp")
-        )
-        for msg in history
-    ]
+    # TODO: Implement database query
+    return []
 
 
 @router.post("/session/start", response_model=GuidedSessionResponse)

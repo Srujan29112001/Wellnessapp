@@ -5,9 +5,6 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Optional
 from datetime import datetime, date
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from backend.database.postgres import get_db
 
 router = APIRouter()
 
@@ -34,39 +31,17 @@ class HealthMetricResponse(HealthMetricCreate):
 @router.post("/", response_model=HealthMetricResponse)
 async def log_health_metrics(
     metrics: HealthMetricCreate,
-    user_id: str = "demo_user",  # TODO: Get from auth
-    db: AsyncSession = Depends(get_db)
+    user_id: str = "demo_user"  # TODO: Get from auth
 ):
     """
     Log daily health metrics
     """
-    from backend.services.health_service import HealthService
-
-    health_metric = await HealthService.create_health_metric(
-        db,
-        user_id=user_id,
-        date=metrics.date,
-        steps=metrics.steps,
-        calories_burned=metrics.calories_burned,
-        distance_km=metrics.distance_km,
-        heart_rate_avg=metrics.heart_rate_avg,
-        sleep_hours=metrics.sleep_hours,
-        weight_kg=metrics.weight_kg
-    )
-
+    # TODO: Implement database storage
     return HealthMetricResponse(
-        id=health_metric.id,
-        user_id=health_metric.user_id,
-        date=health_metric.date,
-        steps=health_metric.steps,
-        calories_burned=health_metric.calories_burned,
-        distance_km=health_metric.distance_km,
-        heart_rate_avg=health_metric.heart_rate_avg,
-        sleep_hours=health_metric.sleep_hours,
-        weight_kg=health_metric.weight_kg,
-        stress_level=health_metric.stress_level,
-        focus_level=health_metric.focus_level,
-        created_at=health_metric.created_at
+        id="temp_id",
+        user_id=user_id,
+        **metrics.dict(),
+        created_at=datetime.now()
     )
 
 
@@ -75,35 +50,13 @@ async def get_health_metrics(
     user_id: str = "demo_user",  # TODO: Get from auth
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
-    limit: int = 30,
-    db: AsyncSession = Depends(get_db)
+    limit: int = 30
 ):
     """
     Get health metrics for a user
     """
-    from backend.services.health_service import HealthService
-
-    metrics = await HealthService.get_health_metrics(
-        db, user_id, start_date, end_date, limit
-    )
-
-    return [
-        HealthMetricResponse(
-            id=m.id,
-            user_id=m.user_id,
-            date=m.date,
-            steps=m.steps,
-            calories_burned=m.calories_burned,
-            distance_km=m.distance_km,
-            heart_rate_avg=m.heart_rate_avg,
-            sleep_hours=m.sleep_hours,
-            weight_kg=m.weight_kg,
-            stress_level=m.stress_level,
-            focus_level=m.focus_level,
-            created_at=m.created_at
-        )
-        for m in metrics
-    ]
+    # TODO: Implement database query
+    return []
 
 
 @router.get("/{metric_id}", response_model=HealthMetricResponse)
