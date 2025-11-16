@@ -10,6 +10,8 @@ router = APIRouter()
 
 
 # Schemas
+from typing import Optional
+
 class FoodItem(BaseModel):
     name: str
     confidence: float
@@ -39,46 +41,48 @@ async def recognize_food(
 
     Accepts: JPG, PNG image files
     """
-    # TODO: Implement food recognition
-    # 1. Load and preprocess image
-    # 2. Run ViT-DINO model
-    # 3. Map to nutrition database
-    # 4. Generate recommendations
+    import tempfile
+    import os
+    from ml.food_recognition.recognizer import get_food_recognizer
 
-    return FoodRecognitionResponse(
-        id="temp_id",
-        user_id=user_id,
-        timestamp=datetime.now(),
-        detected_foods=[
+    # Save uploaded file temporarily
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp_file:
+        content = await file.read()
+        tmp_file.write(content)
+        tmp_path = tmp_file.name
+
+    try:
+        # Recognize food
+        recognizer = get_food_recognizer()
+        result = recognizer.recognize(tmp_path)
+
+        # Convert to FoodItem objects
+        detected_foods = [
             FoodItem(
-                name="Mixed salad",
-                confidence=0.92,
-                calories=150,
-                protein_g=5.0,
-                carbs_g=20.0,
-                fat_g=7.0
-            ),
-            FoodItem(
-                name="Grilled chicken",
-                confidence=0.87,
-                calories=250,
-                protein_g=35.0,
-                carbs_g=0.0,
-                fat_g=10.0
+                name=food["name"],
+                confidence=food["confidence"],
+                calories=food.get("calories"),
+                protein_g=food.get("protein"),
+                carbs_g=food.get("carbs"),
+                fat_g=food.get("fat")
             )
-        ],
-        total_calories=400,
-        nutritional_summary={
-            "protein_g": 40.0,
-            "carbs_g": 20.0,
-            "fat_g": 17.0,
-            "fiber_g": 5.0
-        },
-        recommendations=[
-            "Great protein-rich meal!",
-            "Consider adding complex carbs for sustained energy."
+            for food in result["detected_foods"]
         ]
-    )
+
+        return FoodRecognitionResponse(
+            id=f"food_{user_id}_{int(datetime.now().timestamp())}",
+            user_id=user_id,
+            timestamp=datetime.now(),
+            detected_foods=detected_foods,
+            total_calories=result["total_calories"],
+            nutritional_summary=result["nutritional_summary"],
+            recommendations=result["recommendations"]
+        )
+
+    finally:
+        # Clean up
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
 
 
 @router.post("/ocr-supplement", response_model=dict)
@@ -91,21 +95,29 @@ async def ocr_supplement_label(
 
     Accepts: JPG, PNG images of supplement bottles/labels
     """
-    # TODO: Implement OCR pipeline
-    # 1. Run OCR (Tesseract or EasyOCR)
-    # 2. Parse supplement name, ingredients, dosage
-    # 3. Match against supplement database
-    # 4. Check for interactions/contraindications
+    import tempfile
+    import os
+    from ml.ocr.supplement_ocr import get_supplement_ocr
 
-    return {
-        "id": "temp_id",
-        "user_id": user_id,
-        "timestamp": datetime.now(),
-        "supplement_name": "Ashwagandha Extract",
-        "dosage": "500mg",
-        "ingredients": ["Ashwagandha root extract", "Cellulose capsule"],
-        "active_compounds": {"Withanolides": "5%"},
-        "benefits": ["Stress reduction", "Anxiety relief", "Sleep support"],
-        "warnings": ["Consult doctor if pregnant or nursing"],
-        "contraindications": []
-    }
+    # Save uploaded file temporarily
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp_file:
+        content = await file.read()
+        tmp_file.write(content)
+        tmp_path = tmp_file.name
+
+    try:
+        # Run OCR
+        ocr = get_supplement_ocr()
+        result = ocr.extract_label_info(tmp_path)
+
+        return {
+            "id": f"ocr_{user_id}_{int(datetime.now().timestamp())}",
+            "user_id": user_id,
+            "timestamp": datetime.now(),
+            **result
+        }
+
+    finally:
+        # Clean up
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
