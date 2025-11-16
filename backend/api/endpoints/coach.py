@@ -7,11 +7,13 @@ from datetime import datetime
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
+import logging
 
 from backend.database.postgres import get_db
 from backend.services.coach_service import wellness_coach
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 # Schemas
@@ -61,19 +63,23 @@ async def chat_with_coach(
     - Recent EEG/voice/diet data
     - Long-term memory of past conversations
     """
-    # Use the wellness coach service
-    response = await wellness_coach.chat(
-        user_id=user_id,
-        message=request.message,
-        db_session=db if request.include_context else None
-    )
+    try:
+        # Use the wellness coach service
+        response = await wellness_coach.chat(
+            user_id=user_id,
+            message=request.message,
+            db_session=db if request.include_context else None
+        )
 
-    return ChatResponse(
-        message=response["content"],
-        context_used=response.get("context_used", []),
-        recommendations=None,  # Could extract these from response
-        sources=response.get("sources", [])
-    )
+        return ChatResponse(
+            message=response["content"],
+            context_used=response.get("context_used", []),
+            recommendations=None,  # Could extract these from response
+            sources=response.get("sources", [])
+        )
+    except Exception as e:
+        logger.error(f"Error in coach chat: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/chat/history", response_model=List[ChatMessage])
@@ -84,16 +90,20 @@ async def get_chat_history(
     """
     Get chat history with wellness coach
     """
-    history = await wellness_coach.get_conversation_history(user_id, limit)
+    try:
+        history = await wellness_coach.get_conversation_history(user_id, limit)
 
-    return [
-        ChatMessage(
-            role=msg["role"],
-            content=msg["content"],
-            timestamp=msg.get("timestamp")
-        )
-        for msg in history
-    ]
+        return [
+            ChatMessage(
+                role=msg["role"],
+                content=msg["content"],
+                timestamp=msg.get("timestamp")
+            )
+            for msg in history
+        ]
+    except Exception as e:
+        logger.error(f"Error fetching chat history: {e}")
+        return []
 
 
 @router.post("/session/start", response_model=GuidedSessionResponse)
@@ -176,45 +186,75 @@ async def proactive_check_in(
     - Doing a quick exercise
     - Stress management techniques
     """
-    # Get latest EEG analysis
-    eeg_result = await db.execute(
-        select(EEGAnalysis)
-        .where(EEGAnalysis.user_id == user_id)
-        .order_by(desc(EEGAnalysis.timestamp))
-        .limit(1)
-    )
-    latest_eeg = eeg_result.scalar_one_or_none()
+    try:
+        from sqlalchemy import select, desc
+        from backend.models.postgres_models import EEGAnalysis, HealthMetric
 
-    message = "How are you feeling today?"
-    urgency = "low"
-    suggested_action = None
-    session_type = None
+        # Get latest EEG analysis
+        eeg_result = await db.execute(
+            select(EEGAnalysis)
+            .where(EEGAnalysis.user_id == user_id)
+            .order_by(desc(EEGAnalysis.timestamp))
+            .limit(1)
+        )
+        latest_eeg = eeg_result.scalar_one_or_none()
 
-    if latest_eeg:
-        # High stress detected
-        if latest_eeg.stress_level > 0.7:
-            message = f"I noticed your stress levels are elevated ({latest_eeg.stress_level:.0%}). Would you like to try a 5-minute breathing exercise to help calm your nervous system?"
-            urgency = "high"
-            suggested_action = "breathing_exercise"
-            session_type = "breathing"
+        # Get today's metrics
+        today = datetime.now().date()
+        health_result = await db.execute(
+            select(HealthMetric)
+            .where(HealthMetric.user_id == user_id)
+            .where(HealthMetric.date == today)
+        )
+        today_metrics = health_result.scalar_one_or_none()
 
-        # Low focus
-        elif latest_eeg.focus_level < 0.3:
-            message = f"Your focus seems low ({latest_eeg.focus_level:.0%}). Consider taking a short break or trying a brief meditation to reset your mind."
-            urgency = "medium"
-            suggested_action = "take_break"
-            session_type = "meditation"
+        # Determine proactive message
+        if latest_eeg and latest_eeg.stress_level > 0.7:
+            return {
+                "message": f"I noticed your stress levels are elevated ({latest_eeg.stress_level:.0%}). Would you like to try a 5-minute breathing exercise to help calm your nervous system?",
+                "urgency": "high",
+                "suggested_action": "breathing_exercise",
+                "session_type": "breathing",
+                "timestamp": datetime.now()
+            }
+        elif latest_eeg and latest_eeg.focus_level < 0.3:
+            return {
+                "message": f"Your focus seems low ({latest_eeg.focus_level:.0%}). Consider taking a short break or trying a brief meditation to reset your mind.",
+                "urgency": "medium",
+                "suggested_action": "take_break",
+                "session_type": "meditation",
+                "timestamp": datetime.now()
+            }
+        elif latest_eeg and latest_eeg.drowsiness_level > 0.6:
+            return {
+                "message": f"You seem drowsy. Consider a short walk, some water, or a power nap to recharge.",
+                "urgency": "medium",
+                "suggested_action": "energy_boost",
+                "timestamp": datetime.now()
+            }
+        elif today_metrics and today_metrics.steps and today_metrics.steps < 2000:
+            return {
+                "message": f"You've only taken {today_metrics.steps} steps today. How about a quick walk to boost your energy?",
+                "urgency": "low",
+                "suggested_action": "take_walk",
+                "session_type": "activity",
+                "timestamp": datetime.now()
+            }
+        else:
+            return {
+                "message": "You're doing great! Keep up the healthy habits. Remember to stay hydrated!",
+                "urgency": "low",
+                "suggested_action": "drink_water",
+                "session_type": "reminder",
+                "timestamp": datetime.now()
+            }
 
-        # High drowsiness
-        elif latest_eeg.drowsiness_level > 0.6:
-            message = f"You seem drowsy. Consider a short walk, some water, or a power nap to recharge."
-            urgency = "medium"
-            suggested_action = "energy_boost"
-
-    return {
-        "message": message,
-        "urgency": urgency,
-        "suggested_action": suggested_action,
-        "session_type": session_type,
-        "timestamp": datetime.now()
-    }
+    except Exception as e:
+        logger.error(f"Error in proactive check-in: {e}")
+        return {
+            "message": "Stay mindful of your wellness throughout the day!",
+            "urgency": "low",
+            "suggested_action": "general_reminder",
+            "session_type": "reminder",
+            "timestamp": datetime.now()
+        }
