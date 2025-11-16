@@ -5,10 +5,14 @@ Handles user registration, login, token refresh, and logout
 """
 
 from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, validator
 from typing import Optional
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from backend.services.auth_service import AuthService, get_current_user
+from backend.database.postgres import get_db
+from backend.models.postgres_models import User
 
 
 router = APIRouter()
@@ -20,6 +24,12 @@ class RegisterRequest(BaseModel):
     password: str
     name: str
     age: Optional[int] = None
+
+    @validator('password')
+    def validate_password(cls, v):
+        if len(v) < 8:
+            raise ValueError('Password must be at least 8 characters long')
+        return v
 
 
 class LoginRequest(BaseModel):
@@ -44,23 +54,44 @@ class UserResponse(BaseModel):
 
 
 @router.post("/register", response_model=TokenResponse)
-async def register(request: RegisterRequest):
+async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db)):
     """
     Register a new user
 
     Creates a new user account and returns authentication tokens
     """
-    # In a real implementation:
-    # 1. Check if email already exists
-    # 2. Hash the password
-    # 3. Create user in database
-    # 4. Generate tokens
+    # Check if email already exists
+    result = await db.execute(
+        select(User).where(User.email == request.email)
+    )
+    existing_user = result.scalar_one_or_none()
 
-    # For demo, accept any registration
+    if existing_user:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered"
+        )
+
+    # Hash the password
+    password_hash = AuthService.hash_password(request.password)
+
+    # Create user in database
+    new_user = User(
+        email=request.email,
+        name=request.name,
+        password_hash=password_hash,
+        age=request.age
+    )
+
+    db.add(new_user)
+    await db.commit()
+    await db.refresh(new_user)
+
+    # Generate tokens
     user_data = {
-        "user_id": f"user_{request.email.split('@')[0]}",
-        "email": request.email,
-        "name": request.name
+        "user_id": new_user.id,
+        "email": new_user.email,
+        "name": new_user.name
     }
 
     tokens = AuthService.create_token_pair(user_data)
@@ -69,7 +100,7 @@ async def register(request: RegisterRequest):
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(request: LoginRequest):
+async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
     """
     Login with email and password
 
@@ -79,7 +110,7 @@ async def login(request: LoginRequest):
     user = await AuthService.authenticate_user(
         email=request.email,
         password=request.password,
-        db_service=None  # Would pass real DB service here
+        db_session=db
     )
 
     if not user:

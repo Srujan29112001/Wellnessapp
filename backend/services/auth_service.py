@@ -112,20 +112,23 @@ class AuthService:
             )
 
     @staticmethod
-    async def authenticate_user(email: str, password: str, db_service) -> Optional[Dict]:
+    async def authenticate_user(email: str, password: str, db_session) -> Optional[Dict]:
         """
         Authenticate a user by email and password
 
         Args:
             email: User email
             password: Plain text password
-            db_service: Database service to query users
+            db_session: SQLAlchemy async session
 
         Returns:
             User data if authenticated, None otherwise
         """
-        # In a real implementation, query the database
-        # For now, return demo user if credentials match
+        from sqlalchemy import select
+        from backend.models.postgres_models import User
+        from datetime import datetime
+
+        # Demo user (always works)
         if email == "demo@wellnessai.com" and password == "demo123":
             return {
                 "user_id": "demo_user",
@@ -133,7 +136,35 @@ class AuthService:
                 "name": "Demo User"
             }
 
-        return None
+        # Query database for user
+        try:
+            result = await db_session.execute(
+                select(User).where(User.email == email)
+            )
+            user = result.scalar_one_or_none()
+
+            if not user:
+                return None
+
+            # Verify password
+            if not AuthService.verify_password(password, user.password_hash):
+                return None
+
+            # Update last login
+            user.last_login = datetime.utcnow()
+            await db_session.commit()
+
+            # Return user data
+            return {
+                "user_id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "dosha_type": user.dosha_type.value if user.dosha_type else None
+            }
+
+        except Exception as e:
+            print(f"Authentication error: {e}")
+            return None
 
     @staticmethod
     def create_token_pair(user_data: Dict) -> Dict:
