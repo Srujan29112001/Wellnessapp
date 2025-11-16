@@ -7,6 +7,8 @@ from datetime import datetime, date
 from pydantic import BaseModel
 from enum import Enum
 
+from backend.services.meal_service import MealService
+
 router = APIRouter()
 
 
@@ -65,12 +67,41 @@ async def log_meal(
     """
     Log a meal
     """
-    # TODO: Implement database storage
-    return MealLog(
-        id="temp_id",
+    # Convert food items to food dicts
+    foods = []
+    for i, food_name in enumerate(meal.food_items):
+        food_dict = {
+            "name": food_name,
+            "calories": meal.calories // len(meal.food_items) if meal.calories else 0,
+            "protein_g": meal.protein_g / len(meal.food_items) if meal.protein_g else 0,
+            "carbs_g": meal.carbs_g / len(meal.food_items) if meal.carbs_g else 0,
+            "fat_g": meal.fat_g / len(meal.food_items) if meal.fat_g else 0,
+            "fiber_g": meal.fiber_g / len(meal.food_items) if meal.fiber_g else 0,
+        }
+        if meal.portion_sizes and i < len(meal.portion_sizes):
+            food_dict["portion"] = meal.portion_sizes[i]
+        foods.append(food_dict)
+
+    meal_log = await MealService.log_meal(
         user_id=user_id,
-        timestamp=datetime.now(),
-        **meal.dict()
+        meal_type=meal.meal_type.value,
+        foods=foods,
+        notes=meal.notes
+    )
+
+    return MealLog(
+        id=meal_log["_id"],
+        user_id=meal_log["user_id"],
+        timestamp=meal_log["timestamp"],
+        meal_type=MealType(meal_log["meal_type"]),
+        food_items=meal.food_items,
+        portion_sizes=meal.portion_sizes,
+        calories=meal.calories,
+        protein_g=meal.protein_g,
+        carbs_g=meal.carbs_g,
+        fat_g=meal.fat_g,
+        fiber_g=meal.fiber_g,
+        notes=meal.notes
     )
 
 
@@ -85,8 +116,33 @@ async def get_meal_logs(
     """
     Get meal logs with optional filtering
     """
-    # TODO: Implement database query
-    return []
+    meals = await MealService.get_meal_logs(
+        user_id=user_id,
+        start_date=start_date,
+        end_date=end_date,
+        meal_type=meal_type.value if meal_type else None,
+        limit=limit
+    )
+
+    # Convert to response format
+    result = []
+    for m in meals:
+        foods = m.get("foods", [])
+        result.append(MealLog(
+            id=m["_id"],
+            user_id=m["user_id"],
+            timestamp=m["timestamp"],
+            meal_type=MealType(m["meal_type"]),
+            food_items=[f.get("name", "") for f in foods],
+            calories=m.get("nutrition_totals", {}).get("calories"),
+            protein_g=m.get("nutrition_totals", {}).get("protein_g"),
+            carbs_g=m.get("nutrition_totals", {}).get("carbs_g"),
+            fat_g=m.get("nutrition_totals", {}).get("fat_g"),
+            fiber_g=m.get("nutrition_totals", {}).get("fiber_g"),
+            notes=m.get("notes")
+        ))
+
+    return result
 
 
 @router.get("/summary/{date}", response_model=NutritionalSummary)
@@ -97,19 +153,24 @@ async def get_daily_nutrition_summary(
     """
     Get nutritional summary for a specific date
     """
-    # TODO: Implement aggregation query
+    summary = await MealService.get_nutrition_summary(
+        user_id=user_id,
+        start_date=date,
+        days=1
+    )
+
+    totals = summary.get("totals", {})
+    insights = summary.get("insights", [])
+
     return NutritionalSummary(
         date=date,
-        total_calories=1850,
-        protein_g=85.5,
-        carbs_g=180.0,
-        fat_g=65.0,
-        fiber_g=28.0,
-        meals_logged=4,
-        recommendations=[
-            "Good protein intake!",
-            "Consider adding more vegetables for micronutrients"
-        ]
+        total_calories=int(totals.get("calories", 0)),
+        protein_g=totals.get("protein_g", 0),
+        carbs_g=totals.get("carbs_g", 0),
+        fat_g=totals.get("fat_g", 0),
+        fiber_g=totals.get("fiber_g", 0),
+        meals_logged=summary.get("total_meals", 0),
+        recommendations=insights if insights else ["Log more meals to get insights!"]
     )
 
 
@@ -121,13 +182,22 @@ async def get_nutrition_trends(
     """
     Get nutrition trends over time
     """
-    # TODO: Implement trend analysis
+    analysis = await MealService.analyze_dietary_patterns(
+        user_id=user_id,
+        days=days
+    )
+
+    summary = analysis.get("summary", {})
+    daily_avg = summary.get("daily_averages", {})
+    insights = analysis.get("insights", [])
+
     return {
-        "average_daily_calories": 1920,
-        "protein_trend": "stable",
-        "hydration_adequate": False,
-        "recommendations": [
-            "Consistent calorie intake - good!",
-            "Increase water intake"
-        ]
+        "period_days": days,
+        "average_daily_calories": daily_avg.get("calories", 0),
+        "average_protein_g": daily_avg.get("protein_g", 0),
+        "average_carbs_g": daily_avg.get("carbs_g", 0),
+        "average_fat_g": daily_avg.get("fat_g", 0),
+        "macronutrient_balance": analysis.get("macronutrient_balance"),
+        "recommendations": insights,
+        "total_meals_logged": summary.get("total_meals", 0)
     }
