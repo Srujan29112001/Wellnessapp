@@ -12,15 +12,32 @@ from datetime import datetime, timedelta, date
 import os
 import io
 import time
+from auth_ui import (
+    init_session_state,
+    require_auth,
+    render_user_info,
+    get_auth_headers
+)
+from ui_enhancements import (
+    apply_custom_css,
+    render_metric_card,
+    render_progress_bar,
+    render_info_box,
+    create_gauge_chart,
+    render_stats_grid
+)
 
 # Configuration
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 API_BASE = f"{BACKEND_URL}/api/v1"
 
-# Initialize session state
-if 'user_id' not in st.session_state:
-    st.session_state.user_id = "demo_user"
+# Initialize authentication session state
+init_session_state()
 
+# Require authentication for the app
+require_auth()
+
+# Initialize other session state
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 
@@ -32,36 +49,19 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
-st.markdown("""
-<style>
-    .main-header {
-        font-size: 3rem;
-        font-weight: bold;
-        color: #1f77b4;
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-    .metric-card {
-        background-color: #f0f2f6;
-        padding: 1.5rem;
-        border-radius: 0.5rem;
-        margin: 0.5rem 0;
-    }
-    .recommendation-card {
-        background-color: #e1f5ff;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        border-left: 4px solid #1f77b4;
-        margin: 0.5rem 0;
-    }
-</style>
-""", unsafe_allow_html=True)
+# Apply custom CSS enhancements
+apply_custom_css()
 
 # Helper Functions
 def make_api_request(method, endpoint, **kwargs):
-    """Make API request with error handling"""
+    """Make API request with error handling and authentication"""
     url = f"{API_BASE}{endpoint}"
+
+    # Add authentication headers
+    headers = kwargs.get('headers', {})
+    headers.update(get_auth_headers())
+    kwargs['headers'] = headers
+
     try:
         response = requests.request(method, url, timeout=30, **kwargs)
         response.raise_for_status()
@@ -73,6 +73,11 @@ def make_api_request(method, endpoint, **kwargs):
         st.error("Cannot connect to backend. Please ensure the backend server is running.")
         return None
     except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 401:
+            st.error("Authentication failed. Please log in again.")
+            from auth_ui import logout
+            logout()
+            st.rerun()
         st.error(f"API error: {e.response.status_code} - {e.response.text}")
         return None
     except Exception as e:
@@ -98,6 +103,9 @@ st.sidebar.info("""
 - 📅 Optimized daily schedules
 - 🧘 Ayurvedic principles
 """)
+
+# Render user info in sidebar
+render_user_info()
 
 # ============================================================================
 # PAGE: Dashboard
