@@ -1,275 +1,107 @@
-# 🚀 Quick Start Guide - Wellness AI
-
-This guide will help you get the Wellness AI system up and running in minutes.
+# Quick Start Guide - Wellness AI Platform
 
 ## Prerequisites
 
-- Docker and Docker Compose installed
-- Python 3.9+ (for local development)
-- 8GB RAM minimum (16GB recommended)
-- GPU optional (for faster ML inference)
+- Python 3.8+ installed
+- pip or pip3
+- (Optional) Docker and Docker Compose for full-stack deployment
 
-## 🐳 Quick Start with Docker (Recommended)
+## Option 1: Quick Start (Recommended)
 
-### 1. Clone and Setup
+The fastest way to get started:
 
 ```bash
-git clone <repository-url>
+# 1. Clone or navigate to the project directory
 cd Wellnessapp
 
-# Copy environment file
-cp .env.example .env
-
-# Edit .env with your configuration (optional for demo)
-nano .env
+# 2. Run the automated setup script
+./scripts/setup_and_start.sh
 ```
 
-### 2. Start All Services
+The script will:
+- ✅ Check prerequisites
+- ✅ Create virtual environment
+- ✅ Install dependencies
+- ✅ Generate sample data
+- ✅ Start backend API (http://localhost:8000)
+- ✅ Start frontend UI (http://localhost:8501)
+
+## Option 2: Manual Setup
+
+If you prefer manual control:
 
 ```bash
-docker-compose up -d
+# 1. Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Configure environment
+cp .env.example .env
+# Edit .env to add your API keys (optional for demo mode)
+
+# 4. Generate sample data
+python scripts/generate_sample_data.py
+
+# 5. Start backend
+cd backend
+uvicorn api.main:app --reload
+
+# 6. In a new terminal, start frontend
+cd frontend
+streamlit run app.py
 ```
 
-This will start:
-- PostgreSQL (port 5432)
-- MongoDB (port 27017)
-- Redis (port 6379)
-- Neo4j (port 7474, 7687)
-- Backend API (port 8000)
-- Frontend UI (port 8501)
-- MLflow (port 5000)
-- Prometheus (port 9090)
-- Grafana (port 3000)
+## 🎯 First Steps
 
-### 3. Access the Application
+### 1. Access the Applications
+
+Once running, open your browser:
 
 - **Frontend UI**: http://localhost:8501
 - **API Documentation**: http://localhost:8000/docs
-- **GraphQL Playground**: http://localhost:8000/graphql
-- **MLflow**: http://localhost:5000
-- **Grafana Dashboards**: http://localhost:3000 (admin/admin)
+- **API Root**: http://localhost:8000
 
-### 4. Test EEG Analysis
+### 2. Try the Demo Features
 
-1. Go to http://localhost:8501
-2. Navigate to "🧠 EEG Analysis"
-3. Upload a sample EEG CSV file (see `data/raw/sample_eeg.csv`)
-4. Click "Analyze" to see mental state detection
+#### EEG Analysis
+1. Go to "EEG Analysis" page in Streamlit
+2. Upload a sample EEG file from `data/sample_eeg/`
+3. View mental state analysis and recommendations
 
-### 5. Chat with AI Coach
+#### AI Wellness Coach
+1. Go to "AI Coach" page
+2. Type a wellness question (e.g., "I'm feeling stressed and can't sleep")
+3. Get personalized recommendations
 
-1. Navigate to "💬 AI Coach"
-2. Ask questions like:
-   - "I feel stressed and anxious"
-   - "How can I improve my sleep?"
-   - "What supplements should I take for focus?"
+**Note**: For full LLM functionality, add API keys to `.env`:
+```bash
+OPENAI_API_KEY=your_key_here
+# OR
+ANTHROPIC_API_KEY=your_key_here
+```
 
-## 💻 Local Development (Without Docker)
-
-### 1. Install Dependencies
+## 🧪 Testing
 
 ```bash
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Activate virtual environment
+source venv/bin/activate
 
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### 2. Start Databases
-
-You'll need to install and start PostgreSQL, MongoDB, and Redis locally, or use Docker:
-
-```bash
-# Start only databases with Docker
-docker-compose up -d postgres mongo redis neo4j
-```
-
-### 3. Run Backend
-
-```bash
-# Set environment variables
-export DATABASE_URL="postgresql://wellness_user:wellness_password@localhost:5432/wellness_db"
-export MONGODB_URL="mongodb://localhost:27017/wellness_mongo"
-
-# Run migrations (if applicable)
-# python backend/database/migrations.py
-
-# Start backend
-uvicorn backend.api.main:app --reload --port 8000
-```
-
-### 4. Run Frontend
-
-In a new terminal:
-
-```bash
-streamlit run frontend/app.py --server.port 8501
-```
-
-## 📊 Sample Data
-
-Generate sample EEG data for testing:
-
-```python
-import numpy as np
-import pandas as pd
-
-# Generate 14-channel, 10-second EEG data at 256 Hz
-channels = 14
-duration = 10  # seconds
-sample_rate = 256
-samples = duration * sample_rate
-
-# Simulate EEG with different frequency components
-time = np.linspace(0, duration, samples)
-eeg_data = []
-
-for ch in range(channels):
-    # Mix of frequencies (simulating alpha, beta, etc.)
-    signal = (
-        np.sin(2 * np.pi * 10 * time) * 0.5 +  # Alpha (10 Hz)
-        np.sin(2 * np.pi * 20 * time) * 0.3 +  # Beta (20 Hz)
-        np.random.randn(samples) * 0.1         # Noise
-    )
-    eeg_data.append(signal)
-
-# Save to CSV
-eeg_df = pd.DataFrame(eeg_data)
-eeg_df.to_csv('data/raw/sample_eeg.csv', index=False, header=False)
-print("Sample EEG data saved to data/raw/sample_eeg.csv")
-```
-
-## 🧪 Testing the System
-
-### Test EEG Analysis API
-
-```bash
-curl -X POST "http://localhost:8000/api/v1/eeg/upload" \
-  -F "file=@data/raw/sample_eeg.csv"
-```
-
-### Test AI Coach
-
-```bash
-curl -X POST "http://localhost:8000/api/v1/coach/chat" \
-  -H "Content-Type: application/json" \
-  -d '{"message": "I feel stressed and anxious"}'
-```
-
-### Test GraphQL
-
-Visit http://localhost:8000/graphql and try:
-
-```graphql
-query {
-  healthMetrics(userId: "demo_user") {
-    id
-    date
-    steps
-    stressLevel
-  }
-}
-```
-
-## 🔧 Troubleshooting
-
-### Database Connection Errors
-
-```bash
-# Check if databases are running
-docker-compose ps
-
-# View logs
-docker-compose logs postgres
-docker-compose logs mongo
-
-# Restart services
-docker-compose restart
-```
-
-### Port Already in Use
-
-Edit `.env` file and change ports:
-
-```env
-BACKEND_PORT=8001
-FRONTEND_PORT=8502
-```
-
-### Memory Issues
-
-If you have limited RAM, reduce services:
-
-```bash
-# Start only essential services
-docker-compose up -d postgres mongo backend frontend
-```
-
-## 📚 Next Steps
-
-1. **Customize Your Profile**
-   - Go to Settings → Profile
-   - Take the Ayurvedic Dosha assessment
-   - Set your health goals
-
-2. **Upload Real Data**
-   - Connect EEG device (if available)
-   - Log your meals and supplements
-   - Track daily health metrics
-
-3. **Explore Features**
-   - Try food image recognition
-   - Scan supplement labels with OCR
-   - Get personalized recommendations
-
-4. **Train Your Models**
-   - See `ml/training/` for model training scripts
-   - Use MLflow to track experiments
-   - Fine-tune the LLM coach with your preferences
-
-## 🛠️ Development
-
-### Adding New Features
-
-1. **Backend API endpoint**: Add to `backend/api/endpoints/`
-2. **ML Model**: Add to `ml/<feature>/`
-3. **UI Component**: Add to `frontend/app.py`
-4. **Database Model**: Update `backend/models/`
-
-### Running Tests
-
-```bash
+# Run all tests
 pytest tests/ -v
+
+# Run specific test file
+pytest tests/test_eeg_service.py -v
 ```
 
-### Code Formatting
+## 🛑 Stopping Services
 
 ```bash
-black backend/ ml/ frontend/
-flake8 backend/ ml/
+./scripts/stop_services.sh
 ```
 
-## 📖 Documentation
+## 📝 For Complete Documentation
 
-- **Full Documentation**: See `docs/` folder
-- **API Reference**: http://localhost:8000/docs
-- **Architecture**: See `docs/ARCHITECTURE.md`
-- **Contributing**: See `docs/CONTRIBUTING.md`
-
-## ⚠️ Important Notes
-
-- **Privacy**: All health data is encrypted at rest
-- **Disclaimer**: This is a research/educational project, not medical advice
-- **Consultation**: Always consult healthcare professionals for medical decisions
-
-## 🤝 Support
-
-- GitHub Issues: [Report bugs or request features]
-- Documentation: [Link to full docs]
-- Email: support@example.com
-
----
-
-**Happy wellness tracking! 🧘✨**
+See README.md for full architecture details and feature list.

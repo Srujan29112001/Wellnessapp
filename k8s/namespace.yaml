@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: wellness-ai
+  labels:
+    name: wellness-ai
+    environment: production
