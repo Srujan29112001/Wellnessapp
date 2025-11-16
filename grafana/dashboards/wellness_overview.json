@@ -1,0 +1,112 @@
+{
+  "dashboard": {
+    "title": "Wellness AI - System Overview",
+    "tags": ["wellness-ai", "overview"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "API Requests (Total)",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total[5m]))",
+            "legendFormat": "Total Requests"
+          }
+        ],
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "API Response Time (p95)",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "95th Percentile"
+          }
+        ],
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Active Users (Last 24h)",
+        "targets": [
+          {
+            "expr": "count(count by (user_id) (user_health_metrics_total))",
+            "legendFormat": "Active Users"
+          }
+        ],
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "EEG Analyses Performed",
+        "targets": [
+          {
+            "expr": "sum(eeg_analysis_total)",
+            "legendFormat": "Total Analyses"
+          }
+        ],
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "AI Coach Interactions",
+        "targets": [
+          {
+            "expr": "sum(rate(coach_chat_total[1h]))",
+            "legendFormat": "Chat Rate"
+          }
+        ],
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 8}
+      },
+      {
+        "id": 6,
+        "title": "System Health",
+        "targets": [
+          {
+            "expr": "up{job='backend'}",
+            "legendFormat": "Backend Status"
+          }
+        ],
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 8}
+      },
+      {
+        "id": 7,
+        "title": "Database Connections",
+        "targets": [
+          {
+            "expr": "sum(pg_stat_activity_count)",
+            "legendFormat": "PostgreSQL"
+          },
+          {
+            "expr": "sum(mongodb_connections_current)",
+            "legendFormat": "MongoDB"
+          }
+        ],
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12}
+      },
+      {
+        "id": 8,
+        "title": "Model Inference Time",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(ml_inference_duration_seconds_bucket[5m])) by (le, model))",
+            "legendFormat": "{{model}}"
+          }
+        ],
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12}
+      }
+    ],
+    "refresh": "30s",
+    "schemaVersion": 36,
+    "version": 1
+  }
+}
