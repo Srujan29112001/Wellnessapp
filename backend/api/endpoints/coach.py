@@ -10,7 +10,10 @@ import uuid
 import logging
 
 from backend.database.postgres import get_db
-from backend.services.coach_service import wellness_coach
+from backend.services.llm_coach_service import get_coach
+
+# Initialize wellness coach
+wellness_coach = get_coach()
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -68,11 +71,11 @@ async def chat_with_coach(
         response = await wellness_coach.chat(
             user_id=user_id,
             message=request.message,
-            db_session=db if request.include_context else None
+            user_context=None if not request.include_context else None  # Will use default context from DB
         )
 
         return ChatResponse(
-            message=response["content"],
+            message=response["message"],
             context_used=response.get("context_used", []),
             recommendations=response.get("recommendations"),
             sources=response.get("sources", [])

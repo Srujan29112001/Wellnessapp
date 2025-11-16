@@ -84,6 +84,7 @@ class User(Base):
     voice_analyses = relationship("VoiceAnalysis", back_populates="user", cascade="all, delete-orphan")
     recommendations = relationship("Recommendation", back_populates="user", cascade="all, delete-orphan")
     supplement_logs = relationship("SupplementLog", back_populates="user", cascade="all, delete-orphan")
+    meal_logs = relationship("MealLog", back_populates="user", cascade="all, delete-orphan")
 
 
 class HealthMetric(Base):
@@ -282,3 +283,48 @@ class SupplementLog(Base):
 
     # Relationships
     user = relationship("User", back_populates="supplement_logs")
+
+
+class MealLog(Base):
+    """User's meal and nutrition tracking"""
+    __tablename__ = "meal_logs"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+    # Timestamp
+    timestamp = Column(DateTime(timezone=True), nullable=False, default=func.now())
+
+    # Meal type
+    meal_type = Column(String, nullable=False)  # breakfast, lunch, dinner, snack
+
+    # Food items (can be from CV recognition or manual input)
+    food_items = Column(JSON, default=list)  # [{"name": "apple", "quantity": "1 medium", "source": "cv"}, ...]
+    portion_sizes = Column(JSON, default=list)  # ["100g", "1 cup", ...]
+
+    # Nutrition data (calculated or estimated)
+    calories = Column(Integer)
+    protein_g = Column(Float)
+    carbs_g = Column(Float)
+    fat_g = Column(Float)
+    fiber_g = Column(Float)
+    sugar_g = Column(Float)
+
+    # Micronutrients (optional)
+    vitamins = Column(JSON, default=dict)  # {"vitamin_c": 50, "vitamin_d": 10, ...}
+    minerals = Column(JSON, default=dict)  # {"calcium": 100, "iron": 5, ...}
+
+    # Additional info
+    image_url = Column(String)  # Reference to stored meal image (in MongoDB or S3)
+    notes = Column(Text)
+
+    # Quality indicators
+    healthy_score = Column(Float)  # 0-1, how healthy is this meal
+    dosha_balancing = Column(JSON, default=dict)  # {"vata": "balanced", "pitta": "aggravating"}
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Relationships
+    user = relationship("User", back_populates="meal_logs")
