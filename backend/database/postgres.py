@@ -2,12 +2,12 @@
 PostgreSQL Database Connection and Session Management
 """
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import sessionmaker
 import logging
 
 from config.settings import settings
+from backend.database.base import Base
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +33,6 @@ AsyncSessionLocal = async_sessionmaker(
     autocommit=False,
     autoflush=False,
 )
-
-# Base class for models
-Base = declarative_base()
 
 
 async def init_db():
