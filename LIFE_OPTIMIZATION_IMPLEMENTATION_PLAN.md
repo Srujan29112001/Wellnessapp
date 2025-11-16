@@ -2,9 +2,9 @@
 
 **Started**: 2025-11-16
 **Status**: IN PROGRESS
-**Completion**: 35% (3/14 major components)
+**Completion**: 60% (8/14 major components)
 
-## ✅ Components Built (3/14)
+## ✅ Components Built (8/14)
 
 ### 1. Currency & Location Service ✅
 **File**: `backend/services/currency_location_service.py`
@@ -61,58 +61,106 @@ chart = service.calculate_natal_chart(
 - `DailySchedule` - Optimized schedule
 - `DailyAdherence` - Progress tracking
 
----
+### 4. Nutritional Calculator Service ✅
+**File**: `backend/services/nutritional_calculator.py`
 
-## 🚧 Components In Progress (11/14)
+**Features**:
+- BMR calculation (Harris-Benedict equation)
+- TDEE with activity multipliers
+- Macronutrient distribution (goals + dosha)
+- Micronutrient requirements with health adjustments
+- Hydration calculation (30-35ml/kg)
+- Ayurvedic dietary guidelines per dosha
+- Meal frequency optimization (IF support)
 
-### 4. Nutritional Calculator Service ⏳
-**Next to build**: Calculate BMR, TDEE, macro splits
+**Usage**:
+```python
+calculator = get_nutritional_calculator()
+requirements = calculator.calculate_complete_requirements(profile)
+# Returns: BMR, TDEE, macros, micros, dosha guidelines
+```
 
-**Will calculate**:
-- Basal Metabolic Rate (Harris-Benedict)
-- Total Daily Energy Expenditure
-- Macronutrient ratios (based on goals + dosha)
-- Micronutrient requirements
-- Hydration needs
-- Ayurvedic food properties
+### 5. Global Food Database ✅
+**File**: `backend/services/global_food_database.py`
 
-### 5. Food Database Service ⏳
-**Required**: Regional food database with:
-- Indian foods (dal, roti, sabzi, etc.)
-- American foods
-- Cost per region
-- Ayurvedic properties
-- Allergen information
+**Features**:
+- 20+ foods covering global cuisines
+- Regional pricing (India, US, Europe, etc.)
+- Complete nutritional data per 100g
+- Ayurvedic properties (rasa, virya, vipaka)
+- Allergen tracking
+- Dietary flags (vegan, keto, etc.)
+- Search by category/cuisine/dosha
 
-### 6. Meal Plan Optimization Engine ⏳
-**Algorithm**: Constraint-based optimization (Google OR-Tools)
+**Coverage**:
+- Indian: rice, dal, spices, ghee
+- Western: quinoa, oats, broccoli
+- Mediterranean: olive oil
+- Global: fruits, vegetables, nuts
 
-**Constraints**:
-- Budget limit
-- Nutritional requirements
-- Dosha balance
-- Food preferences/allergies
-- Cooking time available
-- Variety requirements
+### 6. Meal Plan Optimization Engine ✅
+**File**: `backend/services/meal_plan_optimizer.py`
 
-**Outputs**:
-- Daily meal plan
-- Ingredient quantities
-- Cooking instructions
-- Shopping list
-- Cost breakdown
+**Features**:
+- Constraint-based meal generation
+- Budget optimization with regional pricing
+- Nutritional requirement matching (±15%)
+- Dosha balance scoring (0-100)
+- Cooking time constraints
+- Food preference filtering
+- Ingredient-level breakdown with reasons
+- Simple cooking instructions (no full recipes)
 
-### 7. Schedule Optimization Engine ⏳
-**Algorithm**: Chronobiology + Energy-based scheduling
+**Algorithm**:
+- Iterative ingredient selection
+- Base (grain/legume) + vegetables + protein + fat
+- Macro balancing with tolerances
+- Cost minimization
+- Dosha-appropriate food selection
+
+### 7. Schedule Optimization Service ✅
+**File**: `backend/services/schedule_optimizer.py`
+
+**Features**:
+- Chronotype-based scheduling (early bird/night owl)
+- Ayurvedic time periods (dosha cycles)
+- Energy-based task placement
+- Work block optimization (90-min deep work)
+- Exercise timing (based on chronotype)
+- Meditation scheduling (Brahma Muhurta)
+- Meal timing integration
+- Free time allocation
+- Planetary hour guidance (optional)
 
 **Considers**:
-- Chronotype (early bird/night owl)
-- Energy patterns
-- Work commitments
-- Meal timing (Ayurvedic)
-- Exercise timing
-- Spiritual practices
-- Planetary hours (optional)
+- Peak energy hours by chronotype
+- Dosha periods (Vata 2-6am, Kapha 6-10am, Pitta 10-2pm)
+- Work commitments and breaks
+- Sleep preferences
+- Wellness goals
+
+### 8. API Endpoints ✅
+**File**: `backend/api/endpoints/life_optimization.py`
+
+**Endpoints**:
+- `POST /api/v1/life-optimization/profile` - Create/update profile
+- `GET /api/v1/life-optimization/profile/{user_id}` - Get profile
+- `GET /api/v1/life-optimization/profile/{user_id}/nutrition-requirements` - Get nutrition
+- `POST /api/v1/life-optimization/meal-plan/generate` - Generate meal plan
+- `GET /api/v1/life-optimization/meal-plan/{user_id}/current` - Today's meals
+- `POST /api/v1/life-optimization/meal-plan/{user_id}/regenerate` - Regenerate
+- `POST /api/v1/life-optimization/schedule/generate` - Generate schedule
+- `GET /api/v1/life-optimization/schedule/{user_id}/today` - Today's schedule
+- `POST /api/v1/life-optimization/food/search` - Search food database
+- `GET /api/v1/life-optimization/food/{food_id}` - Food details
+- `GET /api/v1/life-optimization/currency/detect-location` - Auto-detect location
+- `GET /api/v1/life-optimization/stats/{user_id}` - User statistics
+
+**Integrated with FastAPI main app** via `backend/api/routes.py`
+
+---
+
+## 🚧 Components In Progress (6/14)
 
 ### 8. Assessment Wizard Frontend ⏳
 **Multi-step form** (10-15 minutes to complete):
