@@ -8,13 +8,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from datetime import date, datetime
 from typing import Optional, List
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.services.wearable_integration import (
     WearableService,
     WearableMetrics
 )
-from backend.api.deps import get_db
+from backend.database.postgres import get_db
 
 router = APIRouter(prefix="/api/v1/wearables", tags=["wearables"])
 
@@ -72,7 +72,7 @@ class WearableMetricsResponse(BaseModel):
 async def connect_fitbit(
     auth_request: FitbitAuthRequest,
     user_id: str,  # In production, get from JWT token
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Connect user's Fitbit account.
@@ -109,7 +109,7 @@ async def connect_fitbit(
 async def upload_apple_health(
     upload_request: AppleHealthUploadRequest,
     user_id: str,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Upload Apple Health export data.
@@ -137,7 +137,7 @@ async def upload_apple_health(
 async def connect_garmin(
     auth_request: GarminAuthRequest,
     user_id: str,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Connect user's Garmin account.
@@ -171,7 +171,7 @@ async def get_platform_metrics(
     platform: str,
     user_id: str,
     target_date: Optional[str] = None,  # Format: YYYY-MM-DD
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ) -> WearableMetricsResponse:
     """
     Get metrics from specific wearable platform.
@@ -219,7 +219,7 @@ async def get_platform_metrics(
 async def get_merged_metrics(
     user_id: str,
     target_date: Optional[str] = None,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ) -> WearableMetricsResponse:
     """
     Get merged metrics from all connected wearable platforms.
@@ -255,7 +255,7 @@ async def get_metrics_history(
     user_id: str,
     platform: str = "merged",
     days: int = 30,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ) -> List[WearableMetricsResponse]:
     """
     Get historical metrics for specified number of days.
@@ -294,7 +294,7 @@ async def get_metrics_history(
 @router.get("/connections")
 async def get_connected_platforms(
     user_id: str,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Get list of connected wearable platforms for user.
@@ -322,7 +322,7 @@ async def get_connected_platforms(
 async def disconnect_platform(
     platform: str,
     user_id: str,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Disconnect wearable platform.
